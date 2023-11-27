@@ -10,49 +10,48 @@ enum ERRORS
     error = 1
 };
 
-
-void find_min_max(int arr[], int size, int *min, int *max)
+void random_fill_array(int arr[], int size, int a, int b)
 {
-    *min = arr[0];
-    *max = arr[1];
-    for (int i = 1; i < size; i ++)
+    for(int i = 0; i < size; i++)
     {
-        if(arr[i] < *min)
-        {
-            *min = arr[i];
-        }
-
-        if(arr[i] > *max)
-        {
-            *max = arr[i];
-        }
+        arr[i] = a + rand() % (b - a + 1);
     }
 }
 
-int swap_min_and_max(int arr[], int size)
+
+void swap(int* min, int* max)
+{
+    int tmp = *max;
+    *max = *min;
+    *min = tmp;
+}
+
+void find_min_max_elem_swap(int arr[], int size, int* min_result, int* max_result)
 {
     int min = arr[0];
     int min_index = 0;
     int max = arr[0];
     int max_index = 0;
 
-    for (int i = 1; i < size; ++i)
+    for(int i = 0; i < size; i++)
     {
         if(arr[i] < min)
         {
             min = arr[i];
             min_index = i;
         }
-        if (arr[i] > max)
+
+        if(arr[i] > max)
         {
             max = arr[i];
             max_index = i;
         }
-    
     }
-    arr[min_index] = max;
-    arr[max_index] = min;
-    return success;
+
+    *min_result = min;
+    *max_result = max;
+    
+    swap(&arr[min_index], &arr[max_index]);
 }
 
 bool check_my_string(char* str)
@@ -95,12 +94,10 @@ int main(int argc, char* argv[])
     }
 
     srand(time(NULL));
-    const int size = 10;
+    int size = 10;
     int arr[size];
-    for (int i = 0; i < size; i++)
-    {
-        arr[i] = rand()%(b - a + 1) + a;
-    }
+    
+    random_fill_array(arr, size, a, b);
 
     printf("Generated array: ");
     for (int i = 0; i < size; i++)
@@ -110,18 +107,14 @@ int main(int argc, char* argv[])
     printf("\n");
 
     int min, max;
-    find_min_max(arr, size, &min, &max);
-    printf("Minimal value: %d\n", min);
-    printf("Maximum value: %d\n", max);
-    swap_min_and_max(arr, size);
+    find_min_max_elem_swap(arr, size, &min, &max);
+    printf("Min value: %d\n", min);
+    printf("Max value: %d\n", max);
     printf("Modified array: ");
     for(int i = 0; i < size; i++)
     {
         printf("%d ", arr[i]);
     }
     printf("\n");
-    
-    
-
     return 0;
 }
