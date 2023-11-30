@@ -123,17 +123,21 @@ status_code sum_two_numbers(char* num_1, char* num_2, int base, char** res)
     return SUCCESS;
 }
 
-void remove_zeroes(char* str) {
+void remove_zeroes(char* str) 
+{
     int ind = 0;
-    while (str[ind] != '\0' && str[ind] == '0') {
+    while (str[ind] != '\0' && str[ind] == '0') 
+    {
         ind++;
     }
-    if (str[ind] == '\0') {
+    if (str[ind] == '\0') 
+    {
         str[1] = '\0';
         return;
     }
     int ind1 = ind;
-    while (str[ind1] != '\0') {
+    while (str[ind1] != '\0') 
+    {
         str[ind1 - ind] = str[ind1];
         ind1++;
     }
