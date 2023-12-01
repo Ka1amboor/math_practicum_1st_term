@@ -76,7 +76,7 @@ status_code sum_two_numbers(char* num_1, char* num_2, int base, char** res)
         (*res)[i] = '0';
     }
 
-    int carry = 0;
+    int carry = 0; //perenos
     int sum = 0;
 
     for(int i = 0; i < max_len; i++)
