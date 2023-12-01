@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdarg.h>
+#include <limits.h>
 
 
 enum status_code
 {
     SUCCESS = 0,
-    MEMORY_ERROR = 1,
-    INVALID_PARAMETER = 2
+    INVALID_PARAMETER = 1,
+    MEMORY_ERROR = 2
 
 };
 
@@ -15,59 +17,70 @@ typedef struct
 {
     double* coordinates;
 
-} Vector;
+}Vector;
 
-enum status_code norm_of_chebyshev(double* result, Vector* vector, int size)
+
+void print_vector(Vector vector, int dimension)
 {
-
-    *result = 0.0;
-
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < dimension; i++)
     {
-        if (*result < fabs(vector->coordinates[i]))
-        {
-            *result = fabs(vector->coordinates[i]);
-        }
+        printf("%lf", vector.coordinates[i]);
+
     }
-    return SUCCESS;
-
-
+    printf("\n");
 }
 
-enum status_code p_norm(double* result, Vector* vector, int size, int p)
+enum status_code norm_of_chebyshev(double* result, Vector vector, int dimension)
 {
-    *result = 0.0;
-
-    if (p > 1)
+    if(dimension < 1)
     {
         return INVALID_PARAMETER;
     }
-    for (int i = 0; i < size; i++)
+    double maxi = vector.coordinates[0];
+
+    for (int i = 0; i < dimension; i++)
     {
-        *result += (vector->coordinates[i])*(vector->coordinates[i]);
+        if (vector.coordinates[i] > maxi)
+        {
+            maxi = vector.coordinates[i];
+        }
     }
-    *result = sqrt(*result);
+    *result = maxi;
+    return SUCCESS;
+
+
+}
+
+enum status_code p_norm(double* result, Vector vector, int dimension, int p)
+{
+    if (p < 1 || dimension <= 0)
+    {
+        return INVALID_PARAMETER;
+    }
+    double sum = 0.0;
+
+    for (int i = 0; i < dimension; i++)
+    {
+        sum += pow(fabs(vector.coordinates[i]), p);
+    }
+    *result = pow(sum, 1.0/ p);
 
     return SUCCESS;
 }
 
-enum status_code a_norm(int size, double*** result, double* res, Vector* vector)
+enum status_code a_norm(double* result, Vector vector, int dimension)
 {
-    double** unite_matrix = (double**)malloc(sizeof(double*) * size);// create unite matrix
-    if(!unite_matrix)
+    if (dimension <= 0)
     {
-        return MEMORY_ERROR;
+        return INVALID_PARAMETER;
     }
-    for (int i = 0; i < size; i++)
+    int unite_matrix[dimension][dimension];
+
+    for (int i = 0; i < dimension; i++)
     {
-        unite_matrix[i]=(double*)malloc(sizeof(double)*size);
-        if(!unite_matrix[i])
+        for(int j = 0; j < dimension; j++)
         {
-            return MEMORY_ERROR;
-        }
-        for (int j = 0; j < size; j++)
-        {
-            if(j == i)
+            if (i == j)
             {
                 unite_matrix[i][j] = 1;
             }
@@ -77,106 +90,135 @@ enum status_code a_norm(int size, double*** result, double* res, Vector* vector)
             }
         }
     }
-    double* multiplication = (double*)malloc(sizeof(double) * size);
-    if (!multiplication)
-    {
-        return MEMORY_ERROR;
-    }
-    for (int i = 0; i < size; i++)
-    {
-        for (int j = 0; j < size; j++)
-        {
-            multiplication[i] += unite_matrix[i][j] * vector->coordinates[j];
-        }
-    }
-    double square_sum = 0;
-    for (int i = 0; i < size; i++)
-    {
-        square_sum += pow(res[i], 2);
-    }
-    *res = sqrt(square_sum);
 
-    for(int i = 0; i < size; i++)
+    double res[dimension];
+    double sum = 0.0;
+
+    for (int i = 0; i < dimension; i++)
     {
-        free(unite_matrix[i]);
+        for (int j = 0; j < dimension; j++)
+        {
+            sum += unite_matrix[i][j] * vector.coordinates[j];
+        }
+        res[i] = sum;
     }
-    free(unite_matrix);
-    free(multiplication);
+    double pow_res = 0.0;
+    for (int i = 0; i < dimension; i++)
+    {
+        pow_res += pow(res[i], 2);
+    }
+    *result = sqrt(pow_res);
     return SUCCESS;
+
+
 }
 
+enum status_code super_function
+(
+    double* result, Vector* result_vector, int dimension, int p,
+    enum status_code (*norm_of_chebyshev)(double*, Vector, int),
+    enum status_code (*p_norm)(double*, Vector, int, int),
+    enum status_code (*a_norm)(double*, Vector, int),
+    int count, ...
+)
+{
+
+    va_list(ptr);
+    va_start(ptr, count);
+
+    double maxi_res[3];
+    maxi_res[0] = INT_MIN;
+    maxi_res[1] = INT_MIN;
+    maxi_res[2] = INT_MIN;
+
+    for (int i = 0; i < count; i++)//vectors
+    {
+        Vector vector = va_arg(ptr, Vector);//get every vector
+        
+        double result_[3];//find answer for vector
+        
+        if (norm_of_chebyshev(&(result_[0]), vector, dimension) != SUCCESS)
+        {
+            return INVALID_PARAMETER;
+        }
+
+        if (p_norm(&(result_[1]), vector, dimension, p) != SUCCESS)
+        {
+            return INVALID_PARAMETER;
+        }
+
+        if (a_norm(&(result_[2]), vector, dimension) != SUCCESS)
+        {
+            return INVALID_PARAMETER;
+        }
+        for (int j = 0; j < 3; j++)
+        {
+            if(result_[j] > maxi_res[j])
+            {
+                maxi_res[j] = result_[j];
+                result_vector[j] = vector;//vector
+                result[j] = maxi_res[j];//answer value
+
+            }
+        }
+    }
+    return SUCCESS;
 
 
-
+}
 
 int main()
 {
-    Vector vector, vector1, vector2;
-    int dimension = 3;
-    double result = 0;
-    double** m_result = NULL; 
     int p = 1;
+    int dimension = 3;
+    Vector vector1, vector2, vector3;
 
-
-    vector.coordinates = (double*)malloc(dimension * sizeof(double));
-    vector.coordinates[0] = 0.0;
-    vector.coordinates[1] = 4.0;
-    vector.coordinates[2] = 3.0;
-
-    vector1.coordinates = (double*)malloc(dimension * sizeof(double));
-    vector1.coordinates[0] = 1.0;
-    vector1.coordinates[1] = 6.0;
-    vector1.coordinates[2] = 8.0;
-
-    vector2.coordinates = (double*)malloc(dimension * sizeof(double));
-    vector2.coordinates[0] = 1.0;
-    vector2.coordinates[1] = 6.0;
-    vector2.coordinates[2] = 8.0;
-    
-    enum status_code chebyshev_status = norm_of_chebyshev(&result, &vector, dimension);
-
-    if(chebyshev_status == SUCCESS)
+    vector1.coordinates = (double*)malloc(sizeof(double) * dimension);
+    if (vector1.coordinates == NULL)
     {
-        printf("The Chebyshev norm result: %lf\n", result);
+        printf("failed to allocate memory\n");
+        return MEMORY_ERROR;
     }
-    else
+    vector1.coordinates[0] = 0.1;
+    vector1.coordinates[1] = 0.5;
+    vector1.coordinates[2] = 3.2;
+
+    vector2.coordinates = (double*)malloc(sizeof(double) * dimension);
+    if (vector2.coordinates == NULL)
     {
-        printf("error\n");
+        printf("failed to allocate memory\n");
+        return MEMORY_ERROR;
     }
+    vector2.coordinates[0] = 0.1;
+    vector2.coordinates[1] = 2.5;
+    vector2.coordinates[2] = 3.2;
 
-    free(vector.coordinates);
-
-    enum status_code p_status = p_norm(&result, &vector, dimension, p);
-
-    if(p_status == SUCCESS)
+    vector3.coordinates = (double*)malloc(sizeof(double) * dimension);
+    if (vector3.coordinates == NULL)
     {
-        printf("The p norm result: %lf\n", result);
+        printf("failed to allocate memory\n");
+        return MEMORY_ERROR;
     }
-    else
+    vector3.coordinates[0] = 0.5;
+    vector3.coordinates[1] = 2.5;
+    vector3.coordinates[2] = 3.0;
+
+    double result[3];
+    Vector result_vector[3];
+    int count = 3;
+
+    super_function(result, result_vector, dimension, p, norm_of_chebyshev, p_norm, a_norm, count, vector1, vector2, vector3);
+
+    for(int i = 0; i < count; i++)
     {
-        printf("ERROR DETECTED! invalid p!");
+        printf("For norm number %d the longest vector is:\n", i + 1);
+        print_vector(result_vector[i], dimension);
+        printf("value of vector %lf\n", result[i]);
     }
-
-    free(vector.coordinates);
-
-    enum status_code a_status = a_norm(dimension, &m_result, &result, &vector); //int size, double*** result, double* res, Vector* vector)
-
-    if (a_status == SUCCESS)
-    {
-        printf("Result of a norm: %lf\n", result);
-    }
-    else
-    {
-        printf("Error\n");
-    }
-    free(m_result);
-
-    // enum status_code super_function
+    free(vector1.coordinates);
+    free(vector2.coordinates);
+    free(vector3.coordinates);
 
    
-
-
-
-
     return 0;
 }
