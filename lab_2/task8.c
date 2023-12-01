@@ -28,7 +28,7 @@ int my_strlen(char* str)
     return end_ptr - start_ptr;
 }
 
-int which_number(char c) 
+int convert_to_int(char c) 
 {
     if (isdigit(c)) 
     {
@@ -76,13 +76,13 @@ status_code sum_two_numbers(char* num_1, char* num_2, int base, char** res)
         (*res)[i] = '0';
     }
 
-    int carry = 0; //perenos
+    int carry = 0;
     int sum = 0;
 
     for(int i = 0; i < max_len; i++)
     {
-        int a = i < len_num_1 ? which_number(num_1[len_num_1-i-1]) : 0;
-        int b = i < len_num_2 ? which_number(num_2[len_num_2-i-1]) : 0;
+        int a = i < len_num_1 ? convert_to_int(num_1[len_num_1-i-1]) : 0;
+        int b = i < len_num_2 ? convert_to_int(num_2[len_num_2-i-1]) : 0;
 
         if (a >= base || b >= base || a == -1 || b == -1) 
         {
