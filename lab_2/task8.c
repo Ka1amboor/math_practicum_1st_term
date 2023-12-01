@@ -28,27 +28,6 @@ int my_strlen(char* str)
     return end_ptr - start_ptr;
 }
 
-void print_error(int st) 
-{
-    switch (st)
-    {
-    case WRONG_BASE:
-        printf("wrong base\n");
-        break;
-
-    case MEMORY_ERROR:
-        printf("failed to allocate memory\n");
-        break;
-
-    case INVALID_VALUE:
-        printf("invalid value!\n");
-        break;
-
-    default:
-        break;
-    }
-}
-
 int which_number(char c) 
 {
     if (isdigit(c)) 
@@ -92,7 +71,11 @@ status_code sum_two_numbers(char* num_1, char* num_2, int base, char** res)
         return MEMORY_ERROR;
     }
 
-    memset(*res, '0', max_len + 1); // full zeros
+    for(int i = 0; i <= max_len + 1; i++)
+    {
+        (*res)[i] = '0';
+    }
+
     int carry = 0;
     int sum = 0;
 
@@ -123,21 +106,17 @@ status_code sum_two_numbers(char* num_1, char* num_2, int base, char** res)
     return SUCCESS;
 }
 
-void remove_zeroes(char* str) 
-{
+void remove_zeroes(char* str) {
     int ind = 0;
-    while (str[ind] != '\0' && str[ind] == '0') 
-    {
+    while (str[ind] != '\0' && str[ind] == '0') {
         ind++;
     }
-    if (str[ind] == '\0') 
-    {
+    if (str[ind] == '\0') {
         str[1] = '\0';
         return;
     }
     int ind1 = ind;
-    while (str[ind1] != '\0') 
-    {
+    while (str[ind1] != '\0') {
         str[ind1 - ind] = str[ind1];
         ind1++;
     }
@@ -178,7 +157,7 @@ int sum(char** result, int base, int count, ...)
 
         strcpy(tmp, *result);
         free(*result);
-        int st = sum_two_numbers(tmp, arg, base, result);
+        status_code st = sum_two_numbers(tmp, arg, base, result);
         if (st != SUCCESS) 
         {
             free(tmp);
@@ -198,20 +177,37 @@ int main()
     char* result = NULL;
     char* value_1 = "A";
     char* value_2 = "A";
+    char* value_3 = "A";
     int base = 16;
-    int count = 2;
+    int count = 3;
 
-    status_code st = sum(&result, base, count, value_1, value_2);
+    status_code st = sum(&result, base, count, value_1, value_2, value_3);
 
-    if (st != SUCCESS )
+    switch(st)
     {
-        print_error(st);
+    case WRONG_BASE:
+        printf("wrong base\n");
         free(result);
-        return ERROR;
-    }
+        break;
 
-    printf("%s\n", result);
-    free(result);
+    case MEMORY_ERROR:
+        printf("failed to allocate memory\n");
+        free(result);
+        break;
+
+    case INVALID_VALUE:
+        printf("invalid value!\n");
+        free(result);
+        break;
+
+    case SUCCESS:
+        printf("%s\n", result);
+        free(result);
+        break;
+
+    default:
+        break;
+    }
 
     return 0;
 }
