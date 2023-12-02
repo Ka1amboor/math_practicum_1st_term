@@ -59,7 +59,7 @@ status_code polynom_decomposition (double epsilon, double a, double** res, int d
     for (int i = 2; i <= degree; i++)
     {
         factorial *= i;
-        new_coefficients[i] /= 1.0 * factorial;
+        new_coefficients[i] /= factorial;
     }
 
     *res = new_coefficients;
