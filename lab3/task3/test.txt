@@ -1,9 +1,8 @@
-1 name1 surname1 2.0345
-2 name2 surname2 1.42323
-3 name3 surname3 5.34354
-4 name4 surname4 6.35354534
-5 name5 surname5 10.82379
-6 name6 surname6 36.34634
-7 name7 surname7 97.643455
-8 name8 surname8 0.4534534
-
+2 user2 surname2 1.42323
+3 user3 surname3 53.4354
+1 user1 surname1 2.0345
+4 user4 surname4 635.354534
+7 user7 surname7 3.643455
+8 user8 surname8 3453.4534
+5 user5 surname5 6.34
+6 user6 surname6 5.34634
