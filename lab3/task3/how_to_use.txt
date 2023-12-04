@@ -1,0 +1,3 @@
+<input.txt> <flag> <output.txt>
+
+  flag: -a or /a -d or /d
