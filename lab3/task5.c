@@ -45,6 +45,30 @@ void print_student(Student* students, int found)
     }
     
 }
+int find_student_by_name(Student* students, int count_of_students, char* buffer)
+{
+    for(int i = 0; i < count_of_students; i++)
+    {
+        if(strcmp(students[i].name, buffer) == 0)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+int find_student_by_group(Student* students, int count_of_students, char* buffer)
+{
+    for(int i = 0; i < count_of_students; i++)
+    {
+        if(strcmp(students[i].group, buffer) == 0)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
 int find_student_by_surname(Student* students, int count_of_students, char* buffer)
 {
     for(int i = 0; i < count_of_students; i++)
@@ -138,7 +162,9 @@ int main(int argc, char* argv[])
     int action = 0;
     int res_id = 0;
     int res_surname = 0;
+    int res_name = 0;
     int id_for_search = 0;
+    int res_group = 0;
     char buffer[128]; //name surname etc
     scanf("%d", &action);
     if(check_action(action) == INVALID_INPUT)
@@ -162,6 +188,20 @@ int main(int argc, char* argv[])
             res_surname = find_student_by_surname(students, count_of_students, buffer);
             print_student(students, res_surname);
             break;
+        
+        case 3:
+            printf("Enter the name of student to search: ");
+            scanf("%s", buffer);
+            res_name = find_student_by_name(students, count_of_students, buffer);
+            print_student(students, res_name);
+            break;
+        case 4:
+            printf("Enter the number of group for search: ");
+            scanf("%s", buffer);
+            res_group = find_student_by_group(students, count_of_students, buffer);
+            print_student(students, res_group);
+            break;
+
             
     }
     free(students);
