@@ -57,7 +57,6 @@ status_code print_student_in_file_by_id(Student* students, int found, char* file
     }
     if(found == -1)
     {
-        printf("There is no such student\n");
         fclose(file_out);
         return INVALID_INPUT;
     }
@@ -236,6 +235,11 @@ int main(int argc, char* argv[])
 
     status_code read_status;
     read_status = read_from_file(argv[1], &students, &count_of_students);
+    if(read_status == FILE_ERROR)
+    {
+        printf("error with opening file\n");
+        return FILE_ERROR;
+    }
     print_choice();
     int action = 0;
     int res_id = 0;
@@ -244,6 +248,7 @@ int main(int argc, char* argv[])
     int id_for_search = 0;
     int res_group = 0;
     float average_grade = 0.0;
+    int res_load = 0;
     char buffer[128]; //name surname etc
     scanf("%d", &action);
     if(check_action(action) == INVALID_INPUT)
@@ -309,7 +314,16 @@ int main(int argc, char* argv[])
             scanf("%d", &id_for_search);
             res_id = find_student_by_id(students, count_of_students, id_for_search);
             average_grade = calculate_average_grade(&students[res_id]);
-            print_student_in_file_by_id(students, res_id, argv[2], average_grade);
+            res_load = print_student_in_file_by_id(students, res_id, argv[2], average_grade);
+            if(res_load ==  INVALID_INPUT)
+            {
+                printf("There is no such student\n");
+                return INVALID_INPUT;
+            }
+            if(res_load == FILE_ERROR)
+            {
+                printf("error with opening file\n");
+            }
             break;
 
             
