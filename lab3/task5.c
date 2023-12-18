@@ -37,14 +37,19 @@ void print_student(Student* students, int found)
     {
        printf("information about found student: \n");
        printf("%d\n%s\n%s\n%s\n", students[found].id, students[found].name, students[found].surname, students[found].group); //TODO: avarage grade
+       printf("Grades:\n");
+       for(int i = 0; i < 5; i++)
+       {
+            printf("%d\n", students[found].grades[i]);
+       }
     }
     
 }
-int find_student_by_surname(Student* students, int count_of_students, char* search_surname)
+int find_student_by_surname(Student* students, int count_of_students, char* buffer)
 {
     for(int i = 0; i < count_of_students; i++)
     {
-        if(strcmp(students[i].surname, search_surname) == 0)
+        if(strcmp(students[i].surname, buffer) == 0)
         {
             return i;
         }
@@ -134,7 +139,7 @@ int main(int argc, char* argv[])
     int res_id = 0;
     int res_surname = 0;
     int id_for_search = 0;
-    char search_surname[128];
+    char buffer[128]; //name surname etc
     scanf("%d", &action);
     if(check_action(action) == INVALID_INPUT)
     {
@@ -153,8 +158,8 @@ int main(int argc, char* argv[])
 
         case 2:
             printf("Enter the surname of student to search\n");
-            scanf("%s", search_surname);
-            res_surname = find_student_by_surname(students, count_of_students, search_surname);
+            scanf("%s", buffer);
+            res_surname = find_student_by_surname(students, count_of_students, buffer);
             print_student(students, res_surname);
             break;
             
