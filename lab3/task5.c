@@ -9,6 +9,7 @@ typedef enum
     MEMORY_ERROR,
     FILE_ERROR
 } status_code;
+
 typedef struct
 {
     unsigned int id;
@@ -17,14 +18,55 @@ typedef struct
     char group[256];
     unsigned char* grades;
 } Student;
+
 status_code check_action(int action)
 {
-    if(action < 1 || action > 4)
+    if(action < 1 || action > 9)
     {
         return INVALID_INPUT;
     }
 
     return SUCCESS;
+}
+float calculate_average_grade(Student* student)
+{
+    float sum = 0;
+    for(int i = 0; i < 5; i++)
+    {
+        sum += student->grades[i];
+    }
+    return sum / 5.0;
+}
+void print_students(Student* students, int count_of_students)
+{
+    for(int i = 0; i < count_of_students; i++)
+    {
+        printf("ID: %d\n", students[i].id);
+        printf("Name: %s\n", students[i].name);
+        printf("Surname: %s\n", students[i].surname);
+        printf("Group: %s\n", students[i].group);
+        
+    }
+}
+status_code print_student_in_file_by_id(Student* students, int found, char* file, float average_grade)
+{
+    FILE* file_out = fopen(file, "w");
+    if(!file_out)
+    {
+        return FILE_ERROR;
+    }
+    if(found == -1)
+    {
+        printf("There is no such student\n");
+        fclose(file_out);
+        return INVALID_INPUT;
+    }
+    else
+    {
+        printf("information about student successly loaded\n"); // average grade
+        fprintf(file_out,"%s\n%s\n%s\n%f\n", students[found].name, students[found].surname, students[found].group, average_grade);
+    }
+    fclose(file_out);
 }
 void print_student(Student* students, int found)
 { 
@@ -36,7 +78,7 @@ void print_student(Student* students, int found)
     else
     {
        printf("information about found student: \n");
-       printf("%d\n%s\n%s\n%s\n", students[found].id, students[found].name, students[found].surname, students[found].group); //TODO: avarage grade
+       printf("%d\n%s\n%s\n%s\n", students[found].id, students[found].name, students[found].surname, students[found].group);
        printf("Grades:\n");
        for(int i = 0; i < 5; i++)
        {
@@ -44,6 +86,35 @@ void print_student(Student* students, int found)
        }
     }
     
+}
+int compare_students_by_group(const void* a, const void* b)
+{
+    Student* student_1 = (Student*)a;
+    Student* student_2 = (Student*)b;
+
+    return (strcmp(student_1->group, student_2->group));
+}
+int compare_students_by_id(const void* a, const void* b)
+{
+    Student* student_1 = (Student*)a;
+    Student* student_2 = (Student*)b;
+
+    return student_1->id - student_2->id;
+}
+
+int compare_students_by_surname(const void* a, const void* b)
+{
+    Student* student_1 = (Student*)a;
+    Student* student_2 = (Student*)b;
+
+    return (strcmp(student_1->surname, student_2->surname));
+}
+int compare_students_by_name(const void* a, const void* b)
+{
+    Student* student_1 = (Student*)a;
+    Student* student_2 = (Student*)b;
+
+    return (strcmp(student_1->name, student_2->name));
 }
 int find_student_by_name(Student* students, int count_of_students, char* buffer)
 {
@@ -115,6 +186,7 @@ status_code read_from_file(const char* input_file, Student** students, int* coun
         if (!(*students)[*count_of_students - 1].grades)
         {
             fclose(file);
+            free(students);
             return MEMORY_ERROR;
         }
 
@@ -142,6 +214,12 @@ void print_choice()
     printf("*  Enter <2> to find student by surname *\n");
     printf("*  Enter <3> to find student by name    *\n");
     printf("*  Enter <4> to find student by group   *\n");
+    printf("*  Enter <5> to sort student by ID      *\n");
+    printf("*  Enter <6> to sort student by surname *\n");
+    printf("*  Enter <7> to sort student by name    *\n");
+    printf("*  Enter <8> to sort student by group   *\n");
+    printf("*  Enter <9> to load information about  *\n");
+    printf("*      student by ID into file          *\n");
     printf("*                                       *\n");
     printf("****************************************\n");
 }
@@ -165,6 +243,7 @@ int main(int argc, char* argv[])
     int res_name = 0;
     int id_for_search = 0;
     int res_group = 0;
+    float average_grade = 0.0;
     char buffer[128]; //name surname etc
     scanf("%d", &action);
     if(check_action(action) == INVALID_INPUT)
@@ -195,11 +274,42 @@ int main(int argc, char* argv[])
             res_name = find_student_by_name(students, count_of_students, buffer);
             print_student(students, res_name);
             break;
+
         case 4:
             printf("Enter the number of group for search: ");
             scanf("%s", buffer);
             res_group = find_student_by_group(students, count_of_students, buffer);
             print_student(students, res_group);
+            break;
+
+        case 5:
+            qsort(students, count_of_students, sizeof(Student), compare_students_by_id);
+            printf("Sorted by ID\n");
+            print_students(students, count_of_students);
+            break;
+        case 6:
+            qsort(students, count_of_students, sizeof(Student), compare_students_by_surname);
+            printf("Sorted by surname\n");
+            print_students(students, count_of_students);
+            break;
+        
+        case 7:
+            qsort(students, count_of_students, sizeof(Student), compare_students_by_name);
+            printf("Sorted by name\n");
+            print_students(students, count_of_students);
+            break;
+
+        case 8:
+            qsort(students, count_of_students, sizeof(Student), compare_students_by_group);
+            printf("Sorted by group\n");
+            print_students(students, count_of_students);
+            break;
+        case 9:
+            printf("Enter the id of student to search: ");
+            scanf("%d", &id_for_search);
+            res_id = find_student_by_id(students, count_of_students, id_for_search);
+            average_grade = calculate_average_grade(&students[res_id]);
+            print_student_in_file_by_id(students, res_id, argv[2], average_grade);
             break;
 
             
