@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include <ctype.h>
 typedef enum
 {
     SUCCESS,
@@ -9,7 +9,6 @@ typedef enum
     MEMORY_ERROR,
     FILE_ERROR
 } status_code;
-
 typedef struct
 {
     unsigned int id;
@@ -18,12 +17,20 @@ typedef struct
     char group[256];
     unsigned char* grades;
 } Student;
+status_code check_action(int action)
+{
+    if(action < 1 || action > 4)
+    {
+        return INVALID_INPUT;
+    }
 
+    return SUCCESS;
+}
 void print_student(Student* students, int found)
 { 
     if(found == -1)
     {
-        printf("There is nosuch student\n");
+        printf("There is no such student\n");
         return;
     }
     else
@@ -33,10 +40,21 @@ void print_student(Student* students, int found)
     }
     
 }
+int find_student_by_surname(Student* students, int count_of_students, char* search_surname)
+{
+    for(int i = 0; i < count_of_students; i++)
+    {
+        if(strcmp(students[i].surname, search_surname) == 0)
+        {
+            return i;
+        }
+    }
 
+    return -1;
+}
 int find_student_by_id(Student* students, int count_of_students, int id_for_search)
 {
-    for (int found = 0; found < count_of_students; found++)
+    for (int found = 0; found < count_of_students; found ++)
     {
         if(students[found].id == id_for_search)
         {
@@ -46,7 +64,6 @@ int find_student_by_id(Student* students, int count_of_students, int id_for_sear
 
     return  -1;
 }
-
 status_code read_from_file(const char* input_file, Student** students, int* count_of_students)
 {
     FILE* file = fopen(input_file, "r");
@@ -87,7 +104,6 @@ status_code read_from_file(const char* input_file, Student** students, int* coun
     fclose(file);
     return SUCCESS;
 }
-
 void print_choice()
 {
     printf("****************************************\n");
@@ -100,26 +116,6 @@ void print_choice()
     printf("*                                       *\n");
     printf("****************************************\n");
 }
-
-
-void print_students(Student* students, int count_of_students)
-{
-    for (int found = 0; found < count_of_students; found++)
-    {
-        printf("Student %d\n", found + 1);
-        printf("ID: %u\n", students[found].id);
-        printf("Name: %s\n", students[found].name);
-        printf("Surname: %s\n", students[found].surname);
-        printf("Group: %s\n", students[found].group);
-        printf("Grades: ");
-        for (int j = 0; j < 5; j++)
-        {
-            printf("%hhu ", students[found].grades[j]);
-        }
-        printf("\n\n");
-    }
-}
-
 int main(int argc, char* argv[])
 {
     if (argc != 3)
@@ -136,9 +132,15 @@ int main(int argc, char* argv[])
     print_choice();
     int action = 0;
     int res_id = 0;
+    int res_surname = 0;
     int id_for_search = 0;
+    char search_surname[128];
     scanf("%d", &action);
-
+    if(check_action(action) == INVALID_INPUT)
+    {
+        printf("invalid input\n");
+        return INVALID_INPUT;
+    }  
     switch(action)
     {
         case 1:
@@ -148,8 +150,15 @@ int main(int argc, char* argv[])
             res_id = find_student_by_id(students, count_of_students, id_for_search);
             print_student(students, res_id);
             break;
-    }
 
+        case 2:
+            printf("Enter the surname of student to search\n");
+            scanf("%s", search_surname);
+            res_surname = find_student_by_surname(students, count_of_students, search_surname);
+            print_student(students, res_surname);
+            break;
+            
+    }
     free(students);
     return 0;
 }
