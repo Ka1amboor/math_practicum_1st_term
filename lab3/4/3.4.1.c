@@ -118,27 +118,28 @@ String copy_to_new(const String source)
     return new_string;
 }
 
-status_code concatination(String string_1, const String string_2) 
+status_code concatination(String* string_1, const String string_2) 
 {
-    int length = string_1.length + string_2.length;
+    int length = string_1->length + string_2.length;
 
-    char* new_string = (char*)malloc((length + 1) * sizeof(char));
+    char* new_string = (char*)malloc(sizeof(char) * (length + 1));
 
     if (!new_string)
     {
         return MEMORY_ERROR;
     }
 
-    strcpy(new_string, string_1.str);
+    strcpy(new_string, string_1->str);
     strcat(new_string, string_2.str);
     
-    free(string_1.str);
+    free(string_1->str);
     
-    string_1.length = length;
-    string_1.str = new_string;
+    string_1->length = length;
+    string_1->str = new_string;
     
     return SUCCESS;
 }
+
 
 int main()
 {
@@ -166,7 +167,7 @@ int main()
     
     print_string(res_string_1);//sister
     
-    if(concatination(res_string_3, res_string_5) == SUCCESS)
+    if(concatination(&res_string_3, res_string_5) == SUCCESS)
      {
         printf("Result of concatination: %s", res_string_3.str);
      }
