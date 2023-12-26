@@ -11,6 +11,15 @@ typedef enum
 
 } status_code;
 
+status_code check_action(int action)
+{
+    if(action < 0 || action > 9)
+    {
+        return INVALID_INPUT;
+    }
+    return SUCCESS;
+}
+
 typedef struct Node
 {
     char* word;
@@ -35,7 +44,7 @@ Node* create_new_node(char* word)
         return NULL;
     }
 
-    strcpy(new_node->word, word); //add word
+    strcpy(new_node->word, word);
     new_node->count = 1;
     new_node->left = NULL;
     new_node->right = NULL;
@@ -99,6 +108,39 @@ void print_tree(Node* root, int depth)
     print_tree(root->right, depth + 1);
 }
 
+void print_options()
+{
+    printf("****************************************\n");
+    printf("*     Please select an action           *\n");
+    printf("*                                       *\n");
+    printf("*  Enter <1> if you want to see how     *\n");
+    printf("*  many times a word occurs in file     *\n");
+    printf("*                                       *\n");
+    printf("****************************************\n");
+}
+
+void count_word_occurrences(Node* node, char* word, int* times_1)
+{
+    if(node == NULL)
+    {
+        return;
+    }
+    int res_strcmp = strcmp(node->word, word);
+
+    if(res_strcmp == 0)
+    {
+        (*times_1)++;
+    }
+    else if(res_strcmp < 0)
+    {
+        count_word_occurrences(node->left, word, times_1);
+    }
+    else
+    {
+        count_word_occurrences(node->right, word, times_1);
+    }
+}
+
 status_code check_input(int argc, const char* argv[])
 {
     if (argc < 3) return INVALID_INPUT;
@@ -147,8 +189,31 @@ int main(int argc, const char* argv[]) // argv[1] - input_file others argv[2] ar
     read_words_and_insert_nodes(file_input, &root, separators);
 
     free(separators);
-    print_tree(root, 0);
+    int action = 0;
+    char word_for_find_1[100];
+    int count_word_1 = 0;
+    int times_1 = 0;
+    // print_tree(root, 0);
+    print_options();
+    scanf("%d", &action);
 
+    if(check_action(action) == INVALID_INPUT)
+    {
+        printf("invalid input\n");
+        return INVALID_INPUT;
+    }
+
+    switch(action)
+    {
+        case 1:
+            printf("Please enter word wich you want to find:\n");
+            scanf("%s", &word_for_find_1);
+            count_word_occurrences(root, word_for_find_1, &times_1);
+            printf("Word '%s occurred %d times in the file.", word_for_find_1, times_1);
+            break;
+            
+    }
+    
     return 0;
 
 }
