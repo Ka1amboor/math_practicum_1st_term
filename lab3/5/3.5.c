@@ -21,7 +21,7 @@ typedef struct
 
 status_code check_action(int action)
 {
-    if(action < 0 || action > 9)
+    if(action < 0 || action > 10)
     {
         return INVALID_INPUT;
     }
@@ -271,104 +271,113 @@ int main(int argc, char* argv[])
         printf("error with opening file\n");
         return FILE_ERROR;
     }
-    print_choice();
     int action = 0;
-    int res_id = 0;
-    int res_surname = 0;
-    int res_name = 0;
-    int id_for_search = 0;
-    int res_group = 0;
-    float average_grade = 0.0;
-    int res_load = 0;
-    char buffer[128]; //name surname etc
-    scanf("%d", &action);
-    if(check_action(action) == INVALID_INPUT)
+    while(1)
     {
-        printf("invalid input\n");
-        return INVALID_INPUT;
-    }  
-    switch(action)
-    {
-        case 1:
+        print_choice();
+        int res_id = 0;
+        int res_surname = 0;
+        int res_name = 0;
+        int id_for_search = 0;
+        int res_group = 0;
+        float average_grade = 0.0;
+        int res_load = 0;
+        char buffer[128]; //name surname etc
+        scanf("%d", &action);
+        if(check_action(action) == INVALID_INPUT)
+        {
+            printf("invalid input\n");
+            return INVALID_INPUT;
+        }
+        if(action == 10)
+        {
+            break;
+        }
+        switch(action)
+        {
+            case 1:
+                
+                printf("Enter the id of student to search: ");
+                scanf("%d", &id_for_search);
+                res_id = find_student_by_id(students, count_of_students, id_for_search);
+                print_student(students, res_id);
+                break;
+
+            case 2:
+                printf("Enter the surname of student to search\n");
+                scanf("%s", buffer);
+                res_surname = find_student_by_surname(students, count_of_students, buffer);
+                print_student(students, res_surname);
+                break;
             
-            printf("Enter the id of student to search: ");
-            scanf("%d", &id_for_search);
-            res_id = find_student_by_id(students, count_of_students, id_for_search);
-            print_student(students, res_id);
-            break;
+            case 3:
+                printf("Enter the name of student to search: ");
+                scanf("%s", buffer);
+                res_name = find_student_by_name(students, count_of_students, buffer);
+                print_student(students, res_name);
+                break;
 
-        case 2:
-            printf("Enter the surname of student to search\n");
-            scanf("%s", buffer);
-            res_surname = find_student_by_surname(students, count_of_students, buffer);
-            print_student(students, res_surname);
-            break;
-        
-        case 3:
-            printf("Enter the name of student to search: ");
-            scanf("%s", buffer);
-            res_name = find_student_by_name(students, count_of_students, buffer);
-            print_student(students, res_name);
-            break;
+            case 4:
+                printf("Enter the number of group for search: ");
+                scanf("%s", buffer);
+                res_group = find_student_by_group(students, count_of_students, buffer);
+                print_student(students, res_group);
+                break;
 
-        case 4:
-            printf("Enter the number of group for search: ");
-            scanf("%s", buffer);
-            res_group = find_student_by_group(students, count_of_students, buffer);
-            print_student(students, res_group);
-            break;
-
-        case 5:
-            qsort(students, count_of_students, sizeof(Student), compare_students_by_id);
-            printf("Sorted by ID\n");
-            print_students(students, count_of_students);
-            break;
-        case 6:
-            qsort(students, count_of_students, sizeof(Student), compare_students_by_surname);
-            printf("Sorted by surname\n");
-            print_students(students, count_of_students);
-            break;
-        
-        case 7:
-            qsort(students, count_of_students, sizeof(Student), compare_students_by_name);
-            printf("Sorted by name\n");
-            print_students(students, count_of_students);
-            break;
-
-        case 8:
-            qsort(students, count_of_students, sizeof(Student), compare_students_by_group);
-            printf("Sorted by group\n");
-            print_students(students, count_of_students);
-            break;
-        case 9:
-            printf("Enter the id of student to search: ");
-            scanf("%d", &id_for_search);
-            res_id = find_student_by_id(students, count_of_students, id_for_search);
-            average_grade = calculate_average_grade(&students[res_id]);
-            res_load = print_student_in_file_by_id(students, res_id, argv[2], average_grade);
-            if(res_load ==  INVALID_INPUT)
-            {
-                printf("There is no such student\n");
-                return INVALID_INPUT;
-            }
-            if(res_load == FILE_ERROR)
-            {
-                printf("error with opening file\n");
-            }
-            break;
-
-        case 0:
-            if(load_average_all_to_file(students, count_of_students, argv[2]) == FILE_ERROR)
-            {
-                printf("erroe with opening file\n");
-                return FILE_ERROR;
-            }
-            else
-            {
-                printf("information successfully loaded!\n");
-            }
-
+            case 5:
+                qsort(students, count_of_students, sizeof(Student), compare_students_by_id);
+                printf("Sorted by ID\n");
+                print_students(students, count_of_students);
+                break;
+            case 6:
+                qsort(students, count_of_students, sizeof(Student), compare_students_by_surname);
+                printf("Sorted by surname\n");
+                print_students(students, count_of_students);
+                break;
             
+            case 7:
+                qsort(students, count_of_students, sizeof(Student), compare_students_by_name);
+                printf("Sorted by name\n");
+                print_students(students, count_of_students);
+                break;
+
+            case 8:
+                qsort(students, count_of_students, sizeof(Student), compare_students_by_group);
+                printf("Sorted by group\n");
+                print_students(students, count_of_students);
+                break;
+            case 9:
+                printf("Enter the id of student to search: ");
+                scanf("%d", &id_for_search);
+                res_id = find_student_by_id(students, count_of_students, id_for_search);
+                average_grade = calculate_average_grade(&students[res_id]);
+                res_load = print_student_in_file_by_id(students, res_id, argv[2], average_grade);
+                if(res_load ==  INVALID_INPUT)
+                {
+                    printf("There is no such student\n");
+                    return INVALID_INPUT;
+                }
+                if(res_load == FILE_ERROR)
+                {
+                    printf("error with opening file\n");
+                }
+                break;
+
+            case 0:
+                if(load_average_all_to_file(students, count_of_students, argv[2]) == FILE_ERROR)
+                {
+                    printf("erroe with opening file\n");
+                    return FILE_ERROR;
+                }
+                else
+                {
+                    printf("information successfully loaded!\n");
+                }
+            default:
+                printf("invalid input, please enter a number between 0 and 9\n");
+
+                
+    }
     }
     free(students);
     return 0;
