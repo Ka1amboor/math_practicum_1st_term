@@ -165,14 +165,16 @@ status_code read_from_file(const char* input_file, Employee** result, int* count
         Employee employee;
 
         sscanf(buffer,"%u %s %s %lf", &employee.id, employee.name, employee.surname, &employee.salary);
-        *result = realloc(*result, (*count_of_employees + 1) * sizeof(Employee));
+        Employee* tmp;
+        tmp = realloc(*result, (*count_of_employees + 1) * sizeof(Employee));
 
-        if(!(*result))
+        if(!(tmp)) //without memory leak
         {
             fclose(file);
             free(result);
             return MEMORY_ERROR;
         }
+        *result = tmp;
 
         (*result)[*count_of_employees] = employee;
         (*count_of_employees)++;
