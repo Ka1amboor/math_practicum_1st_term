@@ -2,12 +2,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+
 typedef enum
 {
     SUCCESS,
     INVALID_INPUT,
     MEMORY_ERROR,
-    FILE_ERROR
+    FILE_ERROR,
+    WRONG_GRADE
+
 } status_code;
 
 typedef struct
@@ -17,6 +20,7 @@ typedef struct
     char surname[256];
     char group[256];
     unsigned char* grades;
+
 } Student;
 
 status_code check_action(int action)
@@ -24,6 +28,22 @@ status_code check_action(int action)
     if(action < 0 || action > 10)
     {
         return INVALID_INPUT;
+    }
+
+    return SUCCESS;
+}
+
+status_code check_students_grades(Student* students, int count_of_students)
+{
+    for(int i = 0; i < count_of_students; i++)
+    {
+        for(int j = 0; j < 5; j++)
+        {
+            if(students[i].grades[j] < 2 || students[i].grades[j] > 5)
+            {
+                return WRONG_GRADE;
+            }
+        }
     }
 
     return SUCCESS;
@@ -108,7 +128,7 @@ void print_student(Student* students, int found)
        printf("%d\n%s\n%s\n%s\n", students[found].id, students[found].name, students[found].surname, students[found].group);
        printf("Grades:\n");
        for(int i = 0; i < 5; i++)
-       {
+       {    
             printf("%d\n", students[found].grades[i]);
        }
     }
@@ -253,9 +273,11 @@ void print_choice()
     printf("*         average grade                 *\n");
     printf("*  Enter <0> to load information about  *\n");
     printf("* the average grade of the best student* \n");
+    printf("*   Enter <10> if you want to exit      *\n");
     printf("*                                       *\n");
     printf("****************************************\n");
 }
+
 int main(int argc, char* argv[])
 {
     if (argc != 3)
@@ -274,10 +296,18 @@ int main(int argc, char* argv[])
         printf("error with opening file\n");
         return FILE_ERROR;
     }
+
     int action = 0;
     while(1)
-    {
+    {   
+        
         print_choice();
+        if(check_students_grades(students, count_of_students) == WRONG_GRADE)
+        {
+            printf("grade must be from 2 to 5\n");
+            return WRONG_GRADE;
+
+        }
         int res_id = 0;
         int res_surname = 0;
         int res_name = 0;
@@ -375,11 +405,7 @@ int main(int argc, char* argv[])
                 else
                 {
                     printf("information successfully loaded!\n");
-                }
-            default:
-                printf("invalid input, please enter a number between 0 and 9\n");
-
-                
+                }     
     }
     }
     free(students);
