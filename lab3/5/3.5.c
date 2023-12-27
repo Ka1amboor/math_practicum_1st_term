@@ -90,7 +90,7 @@ status_code print_student_in_file_by_id(Student* students, int found, char* file
     }
     else
     {
-        printf("information about student successly loaded\n"); // average grade
+        printf("information about student successly loaded\n"); 
         fprintf(file_out,"%s\n%s\n%s\n%f\n", students[found].name, students[found].surname, students[found].group, average_grade);
     }
     fclose(file_out);
@@ -203,12 +203,15 @@ status_code read_from_file(const char* input_file, Student** students, int* coun
     while (fgets(buffer, sizeof(buffer), file) != NULL)
     {   
         (*count_of_students)++;
-        *students = realloc(*students, (*count_of_students) * sizeof(Student));
-        if (*students == NULL)
+        Student* tmp; //no more leak
+        tmp = realloc(*students, (*count_of_students) * sizeof(Student));
+        if (tmp == NULL)
         {
             fclose(file);
+            free(students);
             return MEMORY_ERROR;
         }
+        *students = tmp;
         (*students)[*count_of_students - 1].grades = malloc(5 * sizeof(unsigned char));
         if (!(*students)[*count_of_students - 1].grades)
         {
