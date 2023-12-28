@@ -7,7 +7,8 @@ typedef enum
     SUCCESS,
     INVALID_INPUT,
     FILE_ERROR,
-    MEMORY_ERROR
+    MEMORY_ERROR,
+    ERROR
 
 } status_code;
 
@@ -113,10 +114,23 @@ void print_options()
     printf("****************************************\n");
     printf("*     Please select an action           *\n");
     printf("*                                       *\n");
+    printf("*   Enter <0> if you want to exit       *\n");
     printf("*  Enter <1> if you want to see how     *\n");
     printf("*  many times a word occurs in file     *\n");
+    printf("* Enter <2> for output of the first     *\n");
+    printf("*  n most common words in the file      *\n");
     printf("*                                       *\n");
     printf("****************************************\n");
+}
+
+int count_node(Node* root)
+{
+    if(root == NULL)
+    {
+        return 0;
+    }
+
+    return 1 + count_node(root->left) + count_node(root->right);
 }
 
 void count_word_occurrences(Node* node, char* word, int* times_1)
@@ -139,6 +153,54 @@ void count_word_occurrences(Node* node, char* word, int* times_1)
     {
         count_word_occurrences(node->right, word, times_1);
     }
+}
+
+int compare(const void* a, const void* b)
+{
+    Node* node_a = *(Node**)a;
+    Node* node_b = *(Node**)b;
+
+    return node_b->count - node_a->count;
+}
+
+status_code all_nodes(Node* node, Node*** array_of_nodes, int* index_2) //in_order
+{
+    status_code status = SUCCESS;
+
+    if(node == NULL)
+    {
+        return SUCCESS;
+    }
+
+    status = all_nodes(node->left, array_of_nodes, index_2);
+    if(status != SUCCESS)
+    {
+        return status;
+    }
+
+    (*array_of_nodes)[*index_2] = node;
+    (*index_2)++;
+
+    status = all_nodes(node->right, array_of_nodes, index_2);
+    if(status != SUCCESS)
+    {
+        return status;
+    }
+
+    return SUCCESS;
+}
+
+Node* destroy_tree(Node* root)
+{
+    if(root)
+    {
+        destroy_tree(root->left);
+        destroy_tree(root->right);
+        free(root->word);
+        free(root);
+    }
+
+    return NULL;
 }
 
 status_code check_input(int argc, const char* argv[])
@@ -187,31 +249,88 @@ int main(int argc, const char* argv[]) // argv[1] - input_file others argv[2] ar
     Node* root = NULL;
 
     read_words_and_insert_nodes(file_input, &root, separators);
-
+    int count_of_nodes = count_node(root);
+    printf("The number of nodes: %d\n",count_of_nodes);
     free(separators);
-    int action = 0;
-    char word_for_find_1[100];
-    int count_word_1 = 0;
-    int times_1 = 0;
-    // print_tree(root, 0);
-    print_options();
-    scanf("%d", &action);
+    int flag = 1;
 
-    if(check_action(action) == INVALID_INPUT)
-    {
-        printf("invalid input\n");
-        return INVALID_INPUT;
-    }
+    while(flag)
+    {   
+        int action = 0;
+        char word_for_find_1[100];
+        int count_word_1 = 0;
+        int times_1 = 0;
+        int n_2 = 0;
+        int index_2 = 0;
+        // print_tree(root, 0);
+        print_options();
+        scanf("%d", &action);
 
-    switch(action)
-    {
-        case 1:
-            printf("Please enter word wich you want to find:\n");
-            scanf("%s", &word_for_find_1);
-            count_word_occurrences(root, word_for_find_1, &times_1);
-            printf("Word '%s occurred %d times in the file.", word_for_find_1, times_1);
+        if(check_action(action) == INVALID_INPUT)
+        {
+            printf("invalid input\n");
+            root = destroy_tree(root);
+            return INVALID_INPUT;
+        }
+
+        if (action == 0)
+        {
+            flag = 0;
+            root = destroy_tree(root);
             break;
-            
+        }
+
+        switch(action)
+        {
+            case 1:
+                printf("Please enter word wich you want to find:\n");
+                scanf("%s", &word_for_find_1);
+                count_word_occurrences(root, word_for_find_1, &times_1);
+                printf("Word '%s occurred %d times in the file.\n", word_for_find_1, times_1);
+                break;
+
+            case 2:
+                printf("please enter <n>:\n");
+                if(scanf("%d", &n_2) != 1)
+                {
+                    printf("invalid number\n");
+                    root = destroy_tree(root);
+                    return INVALID_INPUT;
+                }
+
+                Node** array_of_nodes = (Node**)malloc(sizeof(Node*) * count_of_nodes);
+                if(!array_of_nodes)
+                {
+                    destroy_tree(root);
+                    printf("failed toallocate memory\n");
+                    return MEMORY_ERROR;
+                }
+
+                if(all_nodes(root, &array_of_nodes, &index_2) != SUCCESS)
+                {
+                    destroy_tree(root);
+                    free(array_of_nodes);
+                    printf("error\n");
+                    return ERROR;
+                }
+
+                for(int i = 0; i < count_of_nodes; i++)
+                {
+                    printf("%s\n", array_of_nodes[i]->word);
+                }
+                printf("\n");
+                qsort(array_of_nodes, count_of_nodes, sizeof(Node**), compare);
+                for(int i = 0; i < n_2; i++)
+                {
+                    printf("%s\n", array_of_nodes[i]->word);
+                }
+                printf("\n");
+                free(array_of_nodes);
+                break;
+
+                
+
+        }
     }
     
     return 0;
