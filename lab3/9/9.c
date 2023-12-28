@@ -14,7 +14,7 @@ typedef enum
 
 status_code check_action(int action)
 {
-    if(action < 0 || action > 9)
+    if(action < 0 || action > 6)
     {
         return INVALID_INPUT;
     }
