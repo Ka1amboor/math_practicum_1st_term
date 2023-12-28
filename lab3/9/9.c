@@ -121,6 +121,7 @@ void print_options()
     printf("*  n most common words in the file      *\n");
     printf("*  Enter <3> for search the longest     *\n");
     printf("*        and shortest word              *\n");
+    printf("*  Enter <4> for find depth of the tree *\n");
     printf("*                                       *\n");
     printf("****************************************\n");
 }
