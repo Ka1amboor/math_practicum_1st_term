@@ -122,6 +122,8 @@ void print_options()
     printf("*  Enter <3> for search the longest     *\n");
     printf("*        and shortest word              *\n");
     printf("*  Enter <4> for find depth of the tree *\n");
+    printf("*  Enter <5> for save tree in file      *\n");
+    printf("*  Enter <6> load tree from file        *\n");
     printf("*                                       *\n");
     printf("****************************************\n");
 }
@@ -246,6 +248,18 @@ Node* destroy_tree(Node* root)
     return NULL;
 }
 
+void save_tree_to_file(FILE* file_for_save, Node* root, char* separators)//preorder
+{
+    if(root == NULL)
+    {
+        return;
+    }
+    fprintf(file_for_save, "%s%c", root->word, separators[0]);
+    save_tree_to_file(file_for_save, root->left, separators);
+    save_tree_to_file(file_for_save, root->right, separators);
+}
+
+
 status_code check_input(int argc, const char* argv[])
 {
     if (argc < 3) return INVALID_INPUT;
@@ -294,7 +308,7 @@ int main(int argc, const char* argv[]) // argv[1] - input_file others argv[2] ar
     read_words_and_insert_nodes(file_input, &root, separators);
     int count_of_nodes = count_node(root);
     printf("The number of nodes: %d\n",count_of_nodes);
-    free(separators);
+    
     int flag = 1;
 
     while(flag)
@@ -309,7 +323,9 @@ int main(int argc, const char* argv[]) // argv[1] - input_file others argv[2] ar
         Node* max_3 = root;
         int depth_3 = 1;
         unsigned int max_depth_3 = 0;
-        print_tree(root, 0);
+        char file_5[32];
+        char file_6[32];
+        // print_tree(root, 0);
         print_options();
         scanf("%d", &action);
 
@@ -395,8 +411,66 @@ int main(int argc, const char* argv[]) // argv[1] - input_file others argv[2] ar
                 get_depth(root, &max_depth_3, depth_3);
                 printf("max depth of the tree: %u\n", max_depth_3);
                 break;
+
+            case 5:
+                if(root == NULL)
+                {
+                    printf("tree is empty\n");
+                    break;
+                }
+                printf("Enter the file name where you want to save tree:\n");
+                scanf("%s", file_5);
+                FILE* file_for_save = fopen(file_5, "w");
+                if(!file_for_save)
+                {
+                    printf("error with opening file\n");
+                    destroy_tree(root);
+                    free(separators);
+                    return FILE_ERROR;
+                    
+                }
+                else
+                {
+                    save_tree_to_file(file_for_save, root, separators);
+                    printf("done\n");
+                    destroy_tree(root);
+                    fclose(file_for_save);
+
+                }
+            
+            case 6:
+                if(root == NULL)
+                {
+                    printf("tree is empty\n");
+                    break;
+                }
+                printf("please enter the filename from tou want to read tree:\n");
+                scanf("%s", file_6);
+                FILE* file_for_read = fopen(file_6, "r");
+                if(!file_for_read)
+                {
+                    printf("error with opening file\n");
+                    destroy_tree(root);
+                    free(separators);
+                    return FILE_ERROR;
+
+                }
+                else
+                {
+                    read_words_and_insert_nodes(file_for_read, &root,separators);
+                    printf("Tree\n");
+                    print_tree(root, 0);
+                    fclose(file_for_read);
+                    break;
+
+                }
+
+
+
         }
     }
+    free(separators);
+    destroy_tree(root);
     
     return 0;
 
