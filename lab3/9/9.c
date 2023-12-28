@@ -119,6 +119,8 @@ void print_options()
     printf("*  many times a word occurs in file     *\n");
     printf("* Enter <2> for output of the first     *\n");
     printf("*  n most common words in the file      *\n");
+    printf("*  Enter <3> for search the longest     *\n");
+    printf("*        and shortest word              *\n");
     printf("*                                       *\n");
     printf("****************************************\n");
 }
@@ -188,6 +190,46 @@ status_code all_nodes(Node* node, Node*** array_of_nodes, int* index_2) //in_ord
     }
 
     return SUCCESS;
+}
+
+void search_min_and_max_word(Node* root, Node** min_3, Node** max_3)
+{
+    if(root == NULL)
+    {
+        return;
+    }
+    search_min_and_max_word(root->right, min_3, max_3);
+    if(strlen(root->word) > strlen((*max_3)->word))
+    {
+        (*max_3) = root;
+    }
+    if(strlen(root->word) < strlen((*min_3)->word))
+    {
+        *min_3 = root;
+    }
+
+    search_min_and_max_word(root->left, min_3, max_3);
+
+}
+
+void get_depth(Node* node, unsigned int* max_depth_3, int depth_3)
+{
+    if(node == NULL)
+    {
+        return;
+    }
+    if(node->left)
+    {
+        get_depth(node->left, max_depth_3, depth_3 + 1);
+    }
+    if(node->right)
+    {
+        get_depth(node->right, max_depth_3, depth_3 + 1);
+    }
+    if(depth_3 > (*max_depth_3))
+    {
+        (*max_depth_3) = depth_3;
+    }
 }
 
 Node* destroy_tree(Node* root)
@@ -262,7 +304,11 @@ int main(int argc, const char* argv[]) // argv[1] - input_file others argv[2] ar
         int times_1 = 0;
         int n_2 = 0;
         int index_2 = 0;
-        // print_tree(root, 0);
+        Node* min_3 = root;
+        Node* max_3 = root;
+        int depth_3 = 1;
+        unsigned int max_depth_3 = 0;
+        print_tree(root, 0);
         print_options();
         scanf("%d", &action);
 
@@ -328,8 +374,26 @@ int main(int argc, const char* argv[]) // argv[1] - input_file others argv[2] ar
                 free(array_of_nodes);
                 break;
 
-                
+            case 3:
+                if(root == NULL)
+                {
+                    printf("tree is empty\n");
+                    break;
+                }
+                search_min_and_max_word(root, &min_3, &max_3);
+                printf("min word: %s\n", min_3->word);
+                printf("max word: %s\n", max_3->word);
+                break;
 
+            case 4:
+                if(root == NULL)
+                {
+                    printf("tree is empty\n");
+                    break;
+                }
+                get_depth(root, &max_depth_3, depth_3);
+                printf("max depth of the tree: %u\n", max_depth_3);
+                break;
         }
     }
     
