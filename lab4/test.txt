@@ -1,0 +1,6 @@
+#define PI 3.14159
+#define GREETING Hello, World!
+
+We can use macros like PI to replace values in the text.
+Let's also use the GREETING macro.
+This is a test file for macro replacement.
