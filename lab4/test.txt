@@ -1,5 +1,5 @@
 #define PI 3.14159
-#define GREETING Hello
+#define GREETING HELLO
 This is a test file for macro replacement.
 We can use macros like PI to replace values in the text.
 Let's also use the GREETING macro.
