@@ -168,31 +168,20 @@ int compare(const void* a, const void* b)
     return node_b->count - node_a->count;
 }
 
-status_code all_nodes(Node* node, Node*** array_of_nodes, int* index_2) //in_order
+void all_nodes(Node* node, Node*** array_of_nodes, int* index_2)
 {
-    status_code status = SUCCESS;
 
     if(node == NULL)
     {
-        return SUCCESS;
+        return;
     }
 
-    status = all_nodes(node->left, array_of_nodes, index_2);
-    if(status != SUCCESS)
-    {
-        return status;
-    }
+    all_nodes(node->left, array_of_nodes, index_2);
 
     (*array_of_nodes)[*index_2] = node;
     (*index_2)++;
 
-    status = all_nodes(node->right, array_of_nodes, index_2);
-    if(status != SUCCESS)
-    {
-        return status;
-    }
-
-    return SUCCESS;
+    all_nodes(node->right, array_of_nodes, index_2);
 }
 
 void search_min_and_max_word(Node* root, Node** min_3, Node** max_3)
@@ -248,7 +237,7 @@ Node* destroy_tree(Node* root)
     return NULL;
 }
 
-void save_tree_to_file(FILE* file_for_save, Node* root, char* separators)//preorder
+void save_tree_to_file(FILE* file_for_save, Node* root, char* separators)
 {
     if(root == NULL)
     {
@@ -369,13 +358,7 @@ int main(int argc, const char* argv[]) // argv[1] - input_file others argv[2] ar
                     return MEMORY_ERROR;
                 }
 
-                if(all_nodes(root, &array_of_nodes, &index_2) != SUCCESS)
-                {
-                    destroy_tree(root);
-                    free(array_of_nodes);
-                    printf("error\n");
-                    return ERROR;
-                }
+                all_nodes(root, &array_of_nodes, &index_2);
 
                 for(int i = 0; i < count_of_nodes; i++)
                 {
