@@ -72,7 +72,7 @@ void destroy_stack(Stack* stack)
 int check_brackets_balance(char* expression)
 {
     Stack stack;
-    stack.top = NULL;
+    create_stack(&stack);
 
     int len = strlen(expression);
     for(int i = 0; i < len; i++)
@@ -94,6 +94,7 @@ int check_brackets_balance(char* expression)
     destroy_stack(&stack);
 }
 
+
 int main(int argc, char* argv[])
 {
     if(argc < 2)
@@ -106,6 +107,8 @@ int main(int argc, char* argv[])
     int number_of_expression = 0;
     char string[1000];
     FILE* file;
+    char* output_file = NULL;
+    char filename[1000];
 
     for(int i = 1; i < argc; i++)
     {
@@ -116,24 +119,44 @@ int main(int argc, char* argv[])
             return file_error;
         }
         printf("%s file: \n", argv[i]);
-    }
 
-    while(fgets(string, sizeof(string), file))
+        while(fgets(string, sizeof(string), file))
     {
         printf("expression before: %s\n", string);
-        number_of_expression++;
         char expression[1000];
         strcpy(expression, string);
-        if(check_brackets_balance(expression))
-        {
-            printf("ok\n");
-        }
+        if(check_brackets_balance(expression))  printf("brackets balance is correct\n");
         else
         {
-            printf("not ok\n");
-        }
+            output_file = (char*)malloc(strlen(argv[i]) + 8); //errors_
+            if(!output_file)
+            {
+                fclose(file);
+                printf("failed to allocate memory\n");
+                return memory_error;
+            }
 
+            strcpy(output_file, "errors_");
+            strcat(output_file, argv[i]);
+            
+            FILE* out = fopen(output_file, "w");
+            if(!output_file)
+            {
+                printf("error with opening error_file\n");
+                fclose(file);
+                return file_error;
+            }
+
+            fprintf(out, "this expression is not balanced %d \n", number_of_expression);
+            number_of_expression++;
+            fclose(out);
+            
+
+        }
+    
     }
     number_of_expression = 0; //next file
+    }
+    fclose(file);
     return 0;
 }
