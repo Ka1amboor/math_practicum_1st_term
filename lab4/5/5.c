@@ -36,7 +36,7 @@ void create_stack_int(Stack_int* stack)
     stack->top = NULL;
 }
 
-void push_int(Stack_int* stack, int data) //TODO: //status_code for errors?
+void push_int(Stack_int* stack, int data) 
 {
     Stack_elem_int* new_elem = (Stack_elem_int*)malloc(sizeof(Stack_elem_int));
     if(!new_elem)
@@ -203,7 +203,7 @@ int binary_pow(int base, int pow)
     }
 }
 
-status_code get_reverse_poish(const char* infix, char* postfix) //TODO: //ckeck error .
+status_code get_reverse_poish(const char* infix, char* postfix)
 {
     Stack* stack = (Stack*)malloc(sizeof(Stack));
     if(!stack)
@@ -236,7 +236,6 @@ status_code get_reverse_poish(const char* infix, char* postfix) //TODO: //ckeck 
             {
                 postfix[idx_post++] = pop(&stack);
                 postfix[idx_post++] = ' ';
-                pop(&stack);
             }
             if(!is_empty(stack) && peek(stack) == '(')
             {
@@ -442,6 +441,10 @@ status_code proccess_bracket_epression(FILE* input_file, FILE* output_file)
             if(status == success)
             {
                 printf("polish expression: %s\n", polish);
+            }
+            else
+            {
+                fprintf(output_file,"infix: %s can't solve expression due to memory error: %d\n",string, line);
             }
 
             /////solve
