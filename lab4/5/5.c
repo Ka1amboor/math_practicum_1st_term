@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
-//TODO: //fast pow
 typedef enum
 {
     success,
@@ -104,7 +103,7 @@ void create_stack(Stack* stack)
     stack->top = NULL;
 }
 
-void push(Stack* stack, char data) //TODO: //status_code for errors?
+void push(Stack* stack, char data) 
 {
     Stack_elem* new_elem = (Stack_elem*)malloc(sizeof(Stack_elem));
     if(!new_elem)
@@ -184,7 +183,28 @@ int priotity(const char operator)
     }
 }
 
-status_code get_reverse_poish(const char* infix, char* postfix) //TODO: //ckeck error but i dnk how.....help me....
+int binary_pow(int base, int pow)
+{
+    if(pow == 0)
+    {
+        return 1;
+    }
+    if(pow == 1)
+    {
+        return base;
+    }
+    if(pow & 1) // nechet
+    {
+        return binary_pow(base, pow - 1) * base;
+    }
+    else
+    {
+        int number = binary_pow(base, pow >>= 1);
+        return number * number;
+    }
+}
+
+status_code get_reverse_poish(const char* infix, char* postfix) //TODO: //ckeck error .
 {
     Stack* stack = (Stack*)malloc(sizeof(Stack));
     if(!stack)
@@ -270,7 +290,7 @@ char* create_error_file(char* filename)
     return output_file;
 }
 
-status_code solve_expression(char* infix, int* result) //TODO: //more ckeck errors but now i wish it would work please
+status_code solve_expression(char* infix, int* result) //TODO: //more ckeck errors 
 {
     Stack_int* stack = (Stack_int*)malloc(sizeof(Stack_int));
     if(!stack)
@@ -341,7 +361,7 @@ status_code solve_expression(char* infix, int* result) //TODO: //more ckeck erro
                     }
                     else
                     {
-                        push_int(stack, pow(operand_1, operand_2));
+                        push_int(stack, binary_pow(operand_1, operand_2));
                     }
                     break;
                 default:
