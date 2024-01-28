@@ -162,7 +162,7 @@ int is_operator(const char sym)
     return ((sym == '+') || (sym == '-') || (sym == '*') || (sym == '/') || (sym == '^') || (sym == '%') || (sym == '~'));
 }
 
-int priotity(const char op)
+int priority(const char op)
 {
     int flag = 0;
     if(op == '(' || op == ')')
@@ -205,7 +205,7 @@ int binary_pow(int base, int pow)
     }
 }
 
-status_code get_reverse_poish(const char* infix, char* postfix)
+status_code get_reverse_polish(const char* infix, char* postfix)
 {
     Stack* stack = (Stack*)malloc(sizeof(Stack));
     if(!stack)
@@ -262,7 +262,7 @@ status_code get_reverse_poish(const char* infix, char* postfix)
             }
             else
             {
-                while(!is_empty(stack) && priotity(peek(stack)) >= priotity(infix[idx_inf]))
+                while(!is_empty(stack) && priority(peek(stack)) >= priority(infix[idx_inf]))
                 {
                     postfix[idx_post++] = peek(stack);
                     postfix[idx_post++] = ' ';
@@ -468,7 +468,7 @@ status_code is_allowed(const char* string)
     return allowed;
 }
 
-status_code proccess_bracket_epression(FILE* input_file, FILE* output_file)
+status_code proccess_bracket_expression(FILE* input_file, FILE* output_file)
 {
     char sym;
     char string[256];
@@ -514,7 +514,7 @@ status_code proccess_bracket_epression(FILE* input_file, FILE* output_file)
         {
             printf("The infix: %s is balanced by brackets!\n", string);
             char polish[250];
-            status_code status = get_reverse_poish(string, polish);
+            status_code status = get_reverse_polish(string, polish);
             if(status == success)
             {
                 printf("polish expression: %s\n", polish);
@@ -532,6 +532,7 @@ status_code proccess_bracket_epression(FILE* input_file, FILE* output_file)
             if(status_solve == success)
             {
                 printf("result of solve: %d\n", result_of_solve);
+                printf("\n");
             }
             else
             {
@@ -602,7 +603,7 @@ int main(int argc, char* argv[])
             return error_with_opening_file;
         }
 
-        status_code proccess_status = proccess_bracket_epression(input_file, output_file);
+        status_code proccess_status = proccess_bracket_expression(input_file, output_file);
         switch(proccess_status)
         {
             case success:
