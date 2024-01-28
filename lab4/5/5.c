@@ -14,7 +14,9 @@ typedef enum
     empty = '\0',
     division_by_zero,
     uncertainty,
-    overflow
+    overflow,
+    allowed,
+    not_allowed
 
 }status_code;
 
@@ -237,7 +239,7 @@ status_code get_reverse_poish(const char* infix, char* postfix)
                 postfix[idx_post++] = pop(&stack);
                 postfix[idx_post++] = ' ';
             }
-            if(!is_empty(stack) && peek(stack) == '(')
+            if(!is_empty(stack) && peek(stack) == '(')//del all brackets
             {
                 pop(&stack);
             }
@@ -369,7 +371,7 @@ status_code solve_expression(const char* postfix, int* result)
                     }
                     break;
                 case '^':
-                    if(operand_2 == 0 && operand_2 == 0)
+                    if(operand_1 == 0 && operand_2 == 0)
                     {   
                         destroy_stack_int(stack);
                         return uncertainty;
@@ -395,6 +397,35 @@ status_code solve_expression(const char* postfix, int* result)
     *result = stack->top->data;
     destroy_stack_int(stack);
     return success;
+}
+
+bool is_allowed_char(char c)
+{
+    char allowed[] = "0123456789+-*^%%/()";
+    int len = strlen(allowed);
+    for(int i = 0; i < len; i++)
+    {
+        if (c == allowed[i])
+        {
+            return true;
+        }
+
+    }
+    return false;
+}
+
+status_code is_allowed(const char* string)
+{
+    int len = strlen(string);
+    
+    for(int i = 0; i < len; i++)
+    {
+        if(!is_allowed_char(string[i]))
+        {
+            return not_allowed;
+        }
+    }
+    return allowed;
 }
 
 status_code proccess_bracket_epression(FILE* input_file, FILE* output_file)
@@ -427,13 +458,19 @@ status_code proccess_bracket_epression(FILE* input_file, FILE* output_file)
         }
         string[index] = '\0';
         printf("infix: %s\n", string);
+
+        status_code st_allowed = is_allowed(string);
         
 
         if(brackets_counter != 0)
         {
             fprintf(output_file,"infix: %s is not balanced with brackets in line: %d\n",string, line);
         }
-        else
+        else if(st_allowed == not_allowed)
+        {
+            fprintf(output_file,"infix: %s detected the invalid character: %d\n",string, line);
+        }
+        else if(st_allowed == allowed)
         {
             printf("The infix: %s is balanced by brackets!\n", string);
             char polish[250];
