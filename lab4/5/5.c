@@ -38,12 +38,12 @@ void create_stack_int(Stack_int* stack)
     stack->top = NULL;
 }
 
-void push_int(Stack_int* stack, int data) 
+status_code push_int(Stack_int* stack, int data) 
 {
     Stack_elem_int* new_elem = (Stack_elem_int*)malloc(sizeof(Stack_elem_int));
     if(!new_elem)
     {
-        return;
+        return memory_error;
     }
 
     new_elem->data = data;
@@ -314,7 +314,11 @@ status_code solve_expression(const char* postfix, int* result)
                number = number * 10.0 + (postfix[i] - '0');
                 i++; 
             }
-            push_int(stack, number);
+            if(push_int(stack, number) == memory_error)
+            {
+                destroy_stack_int(stack);
+                return memory_error;
+            }
         }
         else if(is_operator(postfix[i]))
         {
@@ -331,11 +335,19 @@ status_code solve_expression(const char* postfix, int* result)
                     }
                     else
                     {
-                        push_int(stack, operand_1 + operand_2);
+                        if(push_int(stack, operand_1 + operand_2) == memory_error)
+                        {
+                            destroy_stack_int(stack);
+                            return memory_error;
+                        }
                     }
                     break;
                 case '-':
-                    push_int(stack, operand_1 - operand_2);
+                    if(push_int(stack, operand_1 - operand_2)== memory_error)
+                    {
+                        destroy_stack_int(stack);
+                        return memory_error;
+                    }
                     break;
                 case '*':
                     if(INT_MAX / operand_1 <= operand_2)
@@ -345,7 +357,11 @@ status_code solve_expression(const char* postfix, int* result)
                     }
                     else
                     {
-                        push_int(stack, operand_1 * operand_2);
+                        if(push_int(stack, operand_1 * operand_2) == memory_error)
+                        {
+                            destroy_stack_int(stack);
+                            return memory_error;
+                        }
                     }
                     break;
                 case '/':
@@ -356,7 +372,11 @@ status_code solve_expression(const char* postfix, int* result)
                     }
                     else
                     {
-                        push_int(stack, operand_1 / operand_2);
+                        if(push_int(stack, operand_1 / operand_2) == memory_error)
+                        {
+                            destroy_stack_int(stack);
+                            return memory_error;
+                        }
                     }
                     break;
                 case '%':
@@ -367,7 +387,11 @@ status_code solve_expression(const char* postfix, int* result)
                     }
                     else
                     {
-                        push_int(stack, operand_1 % operand_2);
+                        if(push_int(stack, operand_1 % operand_2) == memory_error)
+                        {
+                            destroy_stack_int(stack);
+                            return memory_error;
+                        }
                     }
                     break;
                 case '^':
@@ -383,7 +407,11 @@ status_code solve_expression(const char* postfix, int* result)
                     }
                     else
                     {
-                        push_int(stack, binary_pow(operand_1, operand_2));
+                        if(push_int(stack, binary_pow(operand_1, operand_2)) == memory_error)
+                        {
+                            destroy_stack_int(stack);
+                            return memory_error;
+                        }
                     }
                     break;
                 default:
