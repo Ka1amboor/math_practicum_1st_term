@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
+#include <limits.h>
 typedef enum
 {
     success,
@@ -12,7 +13,8 @@ typedef enum
     error_with_opening_file,
     empty = '\0',
     division_by_zero,
-    uncertainty
+    uncertainty,
+    overflow
 
 }status_code;
 
@@ -158,29 +160,26 @@ int is_operator(const char sym)
     return ((sym == '+') || (sym == '-') || (sym == '*') || (sym == '/') || (sym == '^') || (sym == '%') || (sym == '~'));
 }
 
-int priotity(const char operator)
+int priotity(const char op)
 {
-    switch (operator)
+    int flag = 0;
+    if(op == '(' || op == ')')
     {
-        case '(':
-        case ')':
-            return 0;
-
-        case '+':
-        case '-':
-            return 1;
-
-        case '*':
-        case '/':
-        case '%':
-            return 2;
-
-        case '^':
-            return 3;
-
-        default:
-            return 4;
+        flag = 0;
     }
+    else if(op == '+' || op== '-')
+    {
+        flag = 1;
+    }
+    else if(op == '*' || op == '/' || op == '%')
+    {
+        flag = 2;
+    }
+    else if(op == '^')
+    {
+        flag = 3;
+    }
+    return flag;
 }
 
 int binary_pow(int base, int pow)
@@ -276,7 +275,7 @@ status_code get_reverse_poish(const char* infix, char* postfix) //TODO: //ckeck 
 }
 
 
-char* create_error_file(char* filename)
+char* create_error_file(const char* filename)
 {
     char* output_file = NULL;
     output_file = (char*)malloc(strlen(filename) + 8); //errors_
@@ -290,7 +289,7 @@ char* create_error_file(char* filename)
     return output_file;
 }
 
-status_code solve_expression(char* infix, int* result) //TODO: //more ckeck errors 
+status_code solve_expression(const char* postfix, int* result) 
 {
     Stack_int* stack = (Stack_int*)malloc(sizeof(Stack_int));
     if(!stack)
@@ -300,37 +299,53 @@ status_code solve_expression(char* infix, int* result) //TODO: //more ckeck erro
 
     create_stack_int(stack);
     
-    int length = strlen(infix);
+    int length = strlen(postfix);
     int operand_1 = 0;
     int operand_2 = 0;
 
     for(int i = 0; i < length; i++)
     {
-        if(isdigit(infix[i]))
+        if(isdigit(postfix[i]))
         {
             int number = 0;
-            while(isdigit(infix[i]))
+            while(isdigit(postfix[i]))
             {
-               number = number * 10.0 + (infix[i] - '0');
+               number = number * 10.0 + (postfix[i] - '0');
                 i++; 
             }
             push_int(stack, number);
         }
-        else if(is_operator(infix[i]))
+        else if(is_operator(postfix[i]))
         {
             operand_2 = pop_int(&stack);
             operand_1 = pop_int(&stack);
 
-            switch(infix[i])
+            switch(postfix[i])
             {
                 case '+':
-                    push_int(stack, operand_1 + operand_2);
+                    if(operand_1 + operand_2 >= INT_MAX)
+                    {
+                        destroy_stack_int(stack);
+                        return overflow;
+                    }
+                    else
+                    {
+                        push_int(stack, operand_1 + operand_2);
+                    }
                     break;
                 case '-':
                     push_int(stack, operand_1 - operand_2);
                     break;
                 case '*':
-                    push_int(stack, operand_1 * operand_2);
+                    if(operand_1 * operand_2 >= INT_MAX)
+                    {
+                        destroy_stack_int(stack);
+                        return overflow;
+                    }
+                    else
+                    {
+                        push_int(stack, operand_1 * operand_2);
+                    }
                     break;
                 case '/':
                     if(operand_2 == 0)
@@ -356,8 +371,14 @@ status_code solve_expression(char* infix, int* result) //TODO: //more ckeck erro
                     break;
                 case '^':
                     if(operand_2 == 0 && operand_2 == 0)
-                    {
+                    {   
+                        destroy_stack_int(stack);
                         return uncertainty;
+                    }
+                    else if(operand_2 < 0)
+                    {
+                        destroy_stack_int(stack);
+                        return invalid_input;
                     }
                     else
                     {
@@ -446,9 +467,13 @@ status_code proccess_bracket_epression(FILE* input_file, FILE* output_file)
                 {
                     fprintf(output_file,"infix: %s can't solve expression due to memory error: %d\n",string, line);
                 }
-                else
+                else if(status_solve == invalid_input)
                 {
                     fprintf(output_file,"infix: %s can't solve expression due to invalid input: %d\n",string, line);
+                }
+                else
+                {
+                    fprintf(output_file,"infix: %s can't solve expression due to overflow: %d\n",string, line);
                 }
             }
             
