@@ -509,6 +509,8 @@ status_code proccess_bracket_expression(FILE* input_file, FILE* output_file)
         else if(st_allowed == not_allowed)
         {
             fprintf(output_file,"infix: %s detected the invalid character: %d\n",string, line);
+            printf("can't solve!\n");
+            printf("\n");
         }
         else if(st_allowed == allowed)
         {
@@ -539,22 +541,32 @@ status_code proccess_bracket_expression(FILE* input_file, FILE* output_file)
                 if(status_solve == division_by_zero)
                 {
                     fprintf(output_file,"infix: %s can't solve expression due to detected division by zero: %d\n",string, line);
+                    printf("can't solve!\n");
+                    printf("\n");
                 }
                 else if(status_solve == uncertainty)
                 {
                     fprintf(output_file,"infix: %s can't solve expression due to detected uncertainty: %d\n",string, line);
+                    printf("can't solve!\n");
+                    printf("\n");
                 }
                 else if(status_solve == memory_error)
                 {
                     fprintf(output_file,"infix: %s can't solve expression due to memory error: %d\n",string, line);
+                    printf("can't solve!\n");
+                    printf("\n");
                 }
                 else if(status_solve == invalid_input)
                 {
                     fprintf(output_file,"infix: %s can't solve expression due to invalid input: %d\n",string, line);
+                    printf("can't solve!\n");
+                    printf("\n");
                 }
                 else
                 {
                     fprintf(output_file,"infix: %s can't solve expression due to overflow: %d\n",string, line);
+                    printf("can't solve!\n");
+                    printf("\n");
                 }
             }
             
@@ -607,7 +619,7 @@ int main(int argc, char* argv[])
         switch(proccess_status)
         {
             case success:
-                printf("everything ok\n");
+                printf("end\n");
                 break;
         }
 
