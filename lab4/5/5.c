@@ -107,12 +107,12 @@ void create_stack(Stack* stack)
     stack->top = NULL;
 }
 
-void push(Stack* stack, char data) 
+status_code push(Stack* stack, char data) 
 {
     Stack_elem* new_elem = (Stack_elem*)malloc(sizeof(Stack_elem));
     if(!new_elem)
     {
-        return;
+        return memory_error;
     }
 
     new_elem->data = data;
@@ -230,7 +230,11 @@ status_code get_reverse_poish(const char* infix, char* postfix)
         }
         else if(infix[idx_inf] == '(')
         {
-            push(stack, infix[idx_inf]);
+            if(push(stack, infix[idx_inf]) == memory_error)
+            {
+                destroy_stack(stack);
+                return memory_error;
+            }
         }
         else if(infix[idx_inf] == ')')
         {
@@ -250,7 +254,11 @@ status_code get_reverse_poish(const char* infix, char* postfix)
             {
                 postfix[idx_post++] = '0';
                 postfix[idx_post++] = ' ';
-                push(stack, '-');
+                if(push(stack, '-') == memory_error)
+                {
+                    destroy_stack(stack);
+                    return memory_error;
+                }
             }
             else
             {
@@ -260,7 +268,11 @@ status_code get_reverse_poish(const char* infix, char* postfix)
                     postfix[idx_post++] = ' ';
                     pop(&stack);
                 }
-                push(stack, infix[idx_inf]);
+                if(push(stack, infix[idx_inf]) == memory_error)
+                {
+                    destroy_stack(stack);
+                    return memory_error;
+                }
             }
         }
         idx_inf++;
