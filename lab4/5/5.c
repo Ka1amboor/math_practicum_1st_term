@@ -324,7 +324,7 @@ status_code solve_expression(const char* postfix, int* result)
             switch(postfix[i])
             {
                 case '+':
-                    if(operand_1 + operand_2 >= INT_MAX)
+                    if(operand_1 > 0 && operand_2 > 0 && (INT_MAX - operand_2 < operand_1) || operand_1 < 0 && operand_2 < 0 && (INT_MIN - operand_2 > operand_1))
                     {
                         destroy_stack_int(stack);
                         return overflow;
@@ -338,7 +338,7 @@ status_code solve_expression(const char* postfix, int* result)
                     push_int(stack, operand_1 - operand_2);
                     break;
                 case '*':
-                    if(operand_1 * operand_2 >= INT_MAX)
+                    if(INT_MAX / operand_1 <= operand_2)
                     {
                         destroy_stack_int(stack);
                         return overflow;
