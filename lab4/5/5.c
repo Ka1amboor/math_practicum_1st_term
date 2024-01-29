@@ -315,6 +315,9 @@ status_code solve_expression(const char* postfix, int* result)
     int length = strlen(postfix);
     int operand_1 = 0;
     int operand_2 = 0;
+    int tmp_1 = 0;
+    int tmp_2 = 0;
+
 
     for(int i = 0; i < length; i++)
     {
@@ -362,7 +365,22 @@ status_code solve_expression(const char* postfix, int* result)
                     }
                     break;
                 case '*':
-                    if(INT_MAX / operand_1 <= operand_2)
+                    tmp_1 = operand_1;
+                    tmp_2 = operand_2;
+                    if(operand_1 < 0)
+                    {
+                        tmp_1 = operand_1 * -1;
+                    }
+                    if(operand_2 < 0)
+                    {
+                        tmp_2 = operand_2 * -1;
+                    }
+                    if(tmp_1 == 0)
+                    {
+                        destroy_stack_int(stack);
+                        return division_by_zero;
+                    }
+                    if(INT_MAX / tmp_1 <= tmp_2)
                     {
                         destroy_stack_int(stack);
                         return overflow;
