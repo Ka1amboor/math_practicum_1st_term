@@ -131,24 +131,6 @@ status_code Roman (const char* buf, int* num)
     return success;
 }
 
-status_code check(char c, int system, char reg) 
-{
-    if (c < '0' || (c > '9' && c < reg)) 
-    {
-        return invalid_arguments;
-    }
-    if (c > '9') 
-    {
-        int p = (reg == 'a') ? 39 : 7;
-        c -= p + '0';
-        if (c >= system) 
-        {
-            return invalid_arguments;
-        }
-    }
-
-    return success;
-}
 
 int check_number(char* number)
 {
