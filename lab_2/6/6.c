@@ -200,7 +200,7 @@ int find_min_base(char* number)
         }
         ptr++;
     }
-    return max_digit + 1;
+    return max_digit;
 }
 
 status_code Cv(int* cv_res, char* number, int base) 
