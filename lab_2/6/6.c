@@ -278,11 +278,11 @@ status_code Zeckendorf(char* num, unsigned int* res)
 
 int oversscanf(char* stream, const char* format, ...) 
 {
-    int record = 0; //for return count of succesed acepted arguments
-    int idx_format = 0; //i
-    int idx_buf = 0; //n
-    int rec = 0;//for others spec
-    int idx_stream = 0; //c
+    int record = 0;
+    int idx_format = 0;
+    int idx_buf = 0;
+    int rec = 0;
+    int idx_stream = 0; 
     int size = 8;
     int* num;
     int* res_Cv;
