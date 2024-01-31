@@ -251,6 +251,124 @@ status_code Cv(int* cv_res, char* number, int base)
     return success;
 }
 
+int find_min_base_CV(char* number)
+{
+    if (!number)
+    {
+        return 0;
+    }
+    int max_digit = 0;
+    char* ptr = NULL;
+    if(*number == '-')
+    {
+        ptr = number + 1;
+    }
+    else
+    {
+        ptr = number;
+    }
+    while(*ptr)
+    {
+        if(isdigit(*ptr))
+        {
+            if((*ptr - '0') > max_digit)
+            {
+                max_digit = *ptr - '0';
+            }
+        }
+        else
+        {
+            if((*ptr - 'A' + 10) > max_digit)
+            {
+                max_digit = (*ptr - 'A' + 10);
+            }
+        }
+        ptr++;
+    }
+    return max_digit;
+}
+
+int check_number_CV(char* number)
+{
+    char* ptr = NULL;
+    if (*number == '-') 
+    {
+        ptr = number + 1;
+    }
+    else 
+    {
+        ptr = number;
+    }
+    while (*ptr) 
+    {
+        if (isalnum(*ptr)) 
+        {
+           if(isalpha(*ptr))
+           {
+                if((*ptr < 'A' || *ptr > 'Z'))
+                {
+                    return -1;
+                }
+           }
+
+        }
+        else  
+        {
+            return -1;
+        }
+        ptr++;
+    }
+
+    return 1;
+}
+
+status_code CV(int* CV_result, char* number, int base) 
+{
+    if(!number)
+    {
+        return invalid_arguments;
+    }
+    if(check_number_CV(number) == -1)
+    {
+        return invalid_arguments;
+    }
+    int min_base = 0;
+    min_base = find_min_base_CV(number);
+    if(min_base > base)
+    {
+        return invalid_arguments;
+    }
+
+    if(base < 2 || base > 36)
+    {
+        base = 10;
+    }
+    //////////convert
+
+    int sign = 1;
+    char* ptr = NULL;
+    int result = 0;
+
+    if(*number == '-')
+    {
+        sign = -1;
+        ptr = number + 1;
+    }
+    else
+    {
+        ptr = number;
+    }
+
+    while(*ptr)
+    {
+        result = result * base + (isdigit(*ptr) ? *ptr - '0' : *ptr - 'A' + 10);
+        ptr++;
+    }
+
+    
+    *CV_result = sign * result;
+    return success;
+}
 
 status_code Zeckendorf(char* num, unsigned int* res) 
 {
@@ -312,7 +430,9 @@ int oversscanf(char* stream, const char* format, ...)
     int size = 8;
     int* num;
     int* res_Cv;
+    int* res_CV;
     int base = 0;
+    int bbase = 0;
     unsigned int* res_zeckendorf = 0;
     void* std;
     char flag[10];
@@ -396,6 +516,19 @@ int oversscanf(char* stream, const char* format, ...)
             idx_format += 2;
             
         }
+        else if(format[idx_format + 1] == 'C' && format[idx_format + 2] == 'V')
+        {
+            res_CV = va_arg(args, int*);
+            bbase = va_arg(args, int);
+            if(CV(res_CV, buffer, bbase) != success)
+            {
+                free(buffer);
+                return -1;
+            }
+
+            record += 1;
+            idx_format += 2;
+        }
         else
         {
             std = va_arg(args, void*);
@@ -439,15 +572,15 @@ int main()
    int num = 0;
    int cv;
    int base = 2;
-   char stream[] = "XXVII 52 1001011 1000"; //19 101001->1001011
+   int CV;
+   int base_CV = 16;
+   char stream[] = "XXVII 52 1001011 1000 A"; //19 101001->1001011
    unsigned int zeckendorf;
-   if(oversscanf(stream, "%Ro%d%Zr%Cv", &roman, &num, &zeckendorf, &cv, base) == -1)
+   if(oversscanf(stream, "%Ro%d%Zr%Cv%CV", &roman, &num, &zeckendorf, &cv, base, &CV, base_CV) == -1)
    {
         printf("error\n");
         return invalid_input;
    }
-
-   printf("%d\n%d\n%d\n%d\n", roman, num, zeckendorf, cv);
-
+    printf("%d\n%d\n%d\n%d\n%d\n", roman, num, zeckendorf, cv, CV);
     return 0;
 }
