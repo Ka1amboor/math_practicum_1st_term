@@ -1,0 +1,1 @@
+for zeckendorf: example 19: in zeck is 101001 => 100101 + 1 for the end
