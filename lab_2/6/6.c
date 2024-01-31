@@ -166,19 +166,63 @@ int check_number(char* number)
     return 1;
 }
 
+int find_min_base(char* number)
+{
+    if (!number)
+    {
+        return 0;
+    }
+    int max_digit = 0;
+    char* ptr = NULL;
+    if(*number == '-')
+    {
+        ptr = number + 1;
+    }
+    else
+    {
+        ptr = number;
+    }
+    while(*ptr)
+    {
+        if(isdigit(*ptr))
+        {
+            if((*ptr - '0') > max_digit)
+            {
+                max_digit = *ptr - '0';
+            }
+        }
+        else
+        {
+            if((*ptr - 'a' + 10) > max_digit)
+            {
+                max_digit = (*ptr - 'a' + 10);
+            }
+        }
+        ptr++;
+    }
+    return max_digit + 1;
+}
+
 status_code Cv(int* cv_res, char* number, int base) 
 {
     if(!number)
     {
         return invalid_arguments;
     }
-    if (base < 2 || base > 36) 
-    {
-        base = 10;
-    }
     if(check_number(number) == -1)
     {
         return invalid_arguments;
+    }
+    int min_base = 0;
+    min_base = find_min_base(number);
+    if(min_base > base)
+    {
+        return invalid_arguments;
+    }
+
+    if(base < 2 || base > 36)
+    {
+        base = 10;
     }
     //////////convert
 
@@ -198,7 +242,7 @@ status_code Cv(int* cv_res, char* number, int base)
 
     while(*ptr)
     {
-        result = result * base + (isdigit(*ptr) ? - '0' : *ptr - 'a' + 10);
+        result = result * base + (isdigit(*ptr) ? *ptr - '0' : *ptr - 'a' + 10);
         ptr++;
     }
 
@@ -394,8 +438,8 @@ int main()
    int roman = 0;
    int num = 0;
    int cv;
-   int base = 16;
-   char stream[] = "XXVII 52 1001011 -a"; //19 101001->1001011
+   int base = 2;
+   char stream[] = "XXVII 52 1001011 1000"; //19 101001->1001011
    unsigned int zeckendorf;
    if(oversscanf(stream, "%Ro%d%Zr%Cv", &roman, &num, &zeckendorf, &cv, base) == -1)
    {
