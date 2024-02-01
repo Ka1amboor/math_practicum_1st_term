@@ -11,7 +11,8 @@ typedef enum
     memory_error,
     invalid_arguments,
     invalid_input,
-    overflow
+    overflow,
+    error_with_opening_file
 
 }status_code;
 
@@ -419,6 +420,157 @@ status_code Zeckendorf(char* num, unsigned int* res)
     return success;
 }
 
+int overfscanf(FILE* stream, const char* format, ...) 
+{
+    int record = 0;
+    int idx_format = 0;
+    int idx_buf = 0;
+    int rec = 0;
+    int idx_stream = 0; 
+    int size = 8;
+    int* num;
+    int* res_Cv;
+    int* res_CV;
+    int base = 0;
+    int bbase = 0;
+    unsigned int* res_zeckendorf = 0;
+    void* std;
+    char flag[10];
+    int idx_flag = 0;
+    char c = ' ';
+
+    char* buffer = (char*)malloc(sizeof(char) * size);
+    if(!buffer)
+    {
+        return -1;
+    }
+
+    va_list args;
+    va_start(args, format);
+
+    while(format[idx_format] != '\0')
+    {
+        if(format[idx_format] == '%' && format[idx_format + 1] != '\0')
+        {
+            idx_buf = 0;
+            buffer[0] = '\0';
+
+            if(c == EOF)
+            {
+                free(buffer);
+                return record;
+            }
+
+
+        while((c = getc(stream)) != EOF && c != ' ' && c != '\n' && c != '\t')
+        {
+            if(idx_buf >= size - 1)
+            {
+                size *= 2;
+                char* for_realloc = (char*)realloc(buffer, size);
+                if(!for_realloc)
+                {
+                    free(buffer);
+                    va_end(args);
+                    return -1;
+                }
+
+                buffer = for_realloc;
+            }
+
+            buffer[idx_buf] = c;
+            idx_buf++;
+        }
+        buffer[idx_buf] = '\0';
+
+        if(format[idx_format + 1] == 'R' && format[idx_format + 2] == 'o')
+        {
+            num = va_arg(args, int*);
+            if(Roman(buffer, num) == invalid_arguments)
+            {
+                free(buffer);
+                return -1;
+            }
+
+            record += 1;
+            idx_format += 2;
+        }
+        else if(format[idx_format + 1] == 'Z' && format[idx_format + 2] == 'r')
+        {
+            res_zeckendorf = va_arg(args, unsigned int*);
+
+            if(Zeckendorf(buffer, res_zeckendorf) == invalid_arguments)
+            {
+                free(buffer);
+                return -1;
+            }
+            record += 1;
+            idx_format += 2;
+        }
+        else if(format[idx_format + 1] == 'C' && format[idx_format + 2] == 'v')
+        {
+            res_Cv = va_arg(args, int*);
+            base = va_arg(args, int);
+            if(Cv(res_Cv, buffer, base) != success)
+            {
+                free(buffer);
+                return -1;
+            }
+
+            record += 1;
+            idx_format += 2;
+            
+        }
+        else if(format[idx_format + 1] == 'C' && format[idx_format + 2] == 'V')
+        {
+            res_CV = va_arg(args, int*);
+            bbase = va_arg(args, int);
+            if(CV(res_CV, buffer, bbase) != success)
+            {
+                free(buffer);
+                return -1;
+            }
+
+            record += 1;
+            idx_format += 2;
+        }
+        else
+        {
+            std = va_arg(args, void*);
+            flag[0] = '%';
+            idx_flag = 1;
+
+            while(format[idx_format + 1] != '%' && format[idx_format + 1] != '\0')
+            {
+                flag[idx_flag] = format[idx_format + 1];
+                idx_format++;
+                idx_flag++;
+            }
+            flag[idx_flag] = '\0';
+
+            rec = sscanf(buffer, flag, std);
+            if(rec == -1)
+            {
+                return -1;
+            }
+
+            record += rec;
+
+        }
+        }
+        else if( format[idx_format] == '%')
+        {
+            free(buffer);
+            return -1;
+        }
+        idx_format++;
+    }
+
+    va_end(args);
+    free(buffer);
+    return record;
+}
+
 
 int oversscanf(char* stream, const char* format, ...) 
 {
@@ -568,6 +720,12 @@ int oversscanf(char* stream, const char* format, ...)
 
 int main()
 {
+    FILE* file = fopen("2.6.txt", "r");
+    if(!file)
+    {
+        printf("error with opening file\n");
+        return error_with_opening_file;
+    }
    int roman = 0;
    int num = 0;
    int cv;
@@ -581,6 +739,15 @@ int main()
         printf("error\n");
         return invalid_input;
    }
+    printf("result of oversscanf:\n");
+    printf("%d\n%d\n%d\n%d\n%d\n", roman, num, zeckendorf, cv, CV);
+
+    if(overfscanf(file, "%Ro%d%Zr%Cv%CV", &roman, &num, &zeckendorf, &cv, base, &CV, base_CV) == -1)
+    {
+        printf("overfprintf error\n");
+        return invalid_input;
+    }
+    printf("result of overfscanf:\n");
     printf("%d\n%d\n%d\n%d\n%d\n", roman, num, zeckendorf, cv, CV);
     return 0;
 }
