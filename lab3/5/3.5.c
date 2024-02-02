@@ -25,7 +25,7 @@ typedef struct
 
 status_code check_action(int action)
 {
-    if(action < 0 || action > 10)
+    if(action < 0 ||  action > 10)
     {
         return INVALID_INPUT;
     }
@@ -240,7 +240,7 @@ status_code read_from_file(const char* input_file, Student** students, int* coun
             return MEMORY_ERROR;
         }
 
-        sscanf(buffer, "%u %s %s %s %hhu %hhu %hhu %hhu %hhu", 
+        if (sscanf(buffer, "%u %s %s %s %hhu %hhu %hhu %hhu %hhu", 
             &(*students)[*count_of_students - 1].id,
             (*students)[*count_of_students - 1].name, 
             (*students)[*count_of_students - 1].surname,
@@ -249,7 +249,15 @@ status_code read_from_file(const char* input_file, Student** students, int* coun
             &(*students)[*count_of_students - 1].grades[1], 
             &(*students)[*count_of_students - 1].grades[2],
             &(*students)[*count_of_students - 1].grades[3], 
-            &(*students)[*count_of_students - 1].grades[4]);
+            &(*students)[*count_of_students - 1].grades[4]) != 9)
+            {
+                for(int i = 0; i < (*count_of_students); i++)
+                {
+                    free(students[i]->grades);
+                }
+                free(students);
+                return INVALID_INPUT;
+            }
     }
 
     fclose(file);
@@ -296,6 +304,11 @@ int main(int argc, char* argv[])
         printf("error with opening file\n");
         return FILE_ERROR;
     }
+    if(read_status == INVALID_INPUT)
+    {
+        printf("invalid input\n");
+        return INVALID_INPUT;
+    }
 
     int action = 0;
     while(1)
@@ -316,7 +329,11 @@ int main(int argc, char* argv[])
         float average_grade = 0.0;
         int res_load = 0;
         char buffer[128]; //name surname etc
-        scanf("%d", &action);
+        if(scanf("%d", &action) != 1)
+        {
+            printf("invalid input\n");
+            return INVALID_INPUT;
+        }
         if(check_action(action) == INVALID_INPUT)
         {
             printf("invalid input\n");
@@ -331,7 +348,11 @@ int main(int argc, char* argv[])
             case 1:
                 
                 printf("Enter the id of student to search: ");
-                scanf("%d", &id_for_search);
+                if(scanf("%d", &id_for_search)!= 1)
+                {
+                    printf("invalid input\n");
+                    return INVALID_INPUT;
+                }
                 res_id = find_student_by_id(students, count_of_students, id_for_search);
                 print_student(students, res_id);
                 break;
