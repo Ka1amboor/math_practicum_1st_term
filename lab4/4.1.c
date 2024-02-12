@@ -111,8 +111,7 @@ Status_code create_hash_table(Hash_table** hash_table, int size)
 
 	if (!(*hash_table)->items) 
     {
-		free((*hash_table)->items);
-		(*hash_table)->items = NULL;
+		free(*hash_table);
 		return MEMORY_ERROR;
 	}
 
@@ -208,9 +207,10 @@ Status_code replace(Hash_table* hash_table, FILE* file)
     {
         if (index_buf == fileSize)
         {
-            char* temp = realloc(buffer, fileSize * 2);
+            char* temp = (char*)realloc(buffer, fileSize * 2);
             if (!temp)
             {
+                free(buffer);
                 return MEMORY_ERROR;
             }    
             buffer = temp;
@@ -229,9 +229,10 @@ Status_code replace(Hash_table* hash_table, FILE* file)
     {
         if (index_buf == fileSize)
         {
-            char* temp = realloc(buffer, fileSize * 2);
+            char* temp = (char*)realloc(buffer, fileSize * 2);
             if (!temp)
             {
+                free(buffer);
                 return MEMORY_ERROR;
             }    
             buffer = temp;
@@ -242,9 +243,10 @@ Status_code replace(Hash_table* hash_table, FILE* file)
         {
             if (index_buf + strlen(value) >= fileSize)
             {
-                char *temp = realloc(buffer, fileSize * 2);
+                char *temp = (char*)realloc(buffer, fileSize * 2);
                 if (!temp)
                 {
+                    free(buffer);
                     return MEMORY_ERROR;
                 }
                 buffer = temp;
@@ -260,9 +262,10 @@ Status_code replace(Hash_table* hash_table, FILE* file)
         {
             if (index_buf + strlen(str) >= fileSize)
             {
-                char *temp = realloc(buffer, fileSize * 2);
+                char *temp = (char*)realloc(buffer, fileSize * 2);
                 if (!temp)
                 {
+                    free(buffer);
                     return MEMORY_ERROR;
                 }
                 buffer = temp;
@@ -275,9 +278,10 @@ Status_code replace(Hash_table* hash_table, FILE* file)
         {
             if (index_buf == fileSize)
             {
-                char *temp = realloc(buffer, fileSize * 2);
+                char *temp = (char*)realloc(buffer, fileSize * 2);
                 if (!temp)
                 {
+                    free(buffer);
                     return MEMORY_ERROR;
                 }
                 buffer = temp;
@@ -293,34 +297,13 @@ Status_code replace(Hash_table* hash_table, FILE* file)
         }
         fseek(file, -1, SEEK_CUR);
     }
-    printf("%s\n", buffer);
     fseek(file, start_index, SEEK_SET);
     for (int i = 0; i < index_buf; i++)
     {
         fprintf(file, "%c", buffer[i]);
     }
-    while( ( c = fgetc(file)) != EOF )
-    {
-        fprintf(file, "%c", ' ');
-    } 
     free(buffer);
     return SUCCESS; 
-}
-void print_hash_table(Hash_table* hash_table)
-{
-    for (int i = 0; i < hash_table->size; i++)
-    {
-        if (hash_table->items[i] != NULL)
-        {
-            Macros_item* current = hash_table->items[i];
-            while (current != NULL)
-            {
-                printf("%s ", current->value);
-                current = current->next;
-            }
-            printf("\n");
-        }
-    }
 }
 void destroy_table(Hash_table* hash_table)
 {
@@ -361,6 +344,7 @@ Status_code change_size_of_table(Hash_table** table, int new_size)
                 Macros_item* new_macros = (Macros_item*)malloc(sizeof(Macros_item));
                 if (!new_macros)
                 {
+                    destroy_table(new_table);
                     return MEMORY_ERROR;
                 }
                 new_macros->hash = hash;
