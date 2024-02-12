@@ -17,7 +17,7 @@ typedef struct
     int size;
     int capasity;
 
-}List;
+}Array;
 
 typedef enum
 {
@@ -38,27 +38,27 @@ int is_int(char* string)
     }
     return 1;
 }
-List* create_list(int capasity)
+Array* create_Array(int capasity)
 {
-    List* new_list = (List*)malloc(sizeof(List));
-    if (!new_list)
+    Array* new_Array = (Array*)malloc(sizeof(Array));
+    if (!new_Array)
     {
         return NULL;
     }
-    new_list->elems = (MemoryCell**)malloc(sizeof(MemoryCell*) * capasity);
-    if (!new_list->elems)
+    new_Array->elems = (MemoryCell**)malloc(sizeof(MemoryCell*) * capasity);
+    if (!new_Array->elems)
     {
-        free(new_list);
+        free(new_Array);
         return NULL;
     }
     for (int index = 0; index < capasity; index++)
     {
-        new_list->elems[index] = NULL;
+        new_Array->elems[index] = NULL;
     }
-    new_list->capasity = capasity;
-    new_list->size = 0;
+    new_Array->capasity = capasity;
+    new_Array->size = 0;
 
-    return new_list;
+    return new_Array;
 }
 MemoryCell* create_memory_cell(char* name, int value)
 {
@@ -79,22 +79,22 @@ int comparator(const void* a, const void* b)
     return strcmp(elem_a->name, elem_b->name);
 }
 
-status_code insert(List* list, MemoryCell* elem)
+status_code insert(Array* Array, MemoryCell* elem)
 {
-    if (list->size + 1 >= list->capasity)
+    if (Array->size + 1 >= Array->capasity)
     {
-        list->capasity *= 2;
-        MemoryCell** tmp = (MemoryCell**)realloc(list->elems, sizeof(MemoryCell*) * list->capasity);
+        Array->capasity *= 2;
+        MemoryCell** tmp = (MemoryCell**)realloc(Array->elems, sizeof(MemoryCell*) * Array->capasity);
         if (!tmp)
         {
-            list->capasity /= 2;
+            Array->capasity /= 2;
             return memory_error;
         }
-        list->elems = tmp;
+        Array->elems = tmp;
     }
-    list->elems[list->size] = elem;
-    (list->size)++;
-    qsort(list->elems, list->size, sizeof(MemoryCell*), comparator);
+    Array->elems[Array->size] = elem;
+    (Array->size)++;
+    qsort(Array->elems, Array->size, sizeof(MemoryCell*), comparator);
 
     return success;
 }
@@ -136,19 +136,19 @@ char* read_expression_from_file(FILE *file)
     expression[index + 1] = '\0';
     return expression;
 }
-int binary_search(List* list, char* key)
+int binary_search(Array* Array, char* key)
 {
     int left = 0;            
-    int right = list->size; 
+    int right = Array->size; 
     int mid = 0;              
     while (left <= right)
     {
         mid = (left + right) / 2;
-        if (list->elems[mid] == NULL)
+        if (Array->elems[mid] == NULL)
         {
             return -1;  
         } 
-        MemoryCell* elem = list->elems[mid];
+        MemoryCell* elem = Array->elems[mid];
         int res_strcmp = strcmp(key, elem->name);                           
         if (res_strcmp == 0) 
         {
@@ -169,20 +169,20 @@ int is_operator(char sym)
 {
     return (sym == '+' || sym == '-' || sym == '*' || sym == '/' || sym == '%') ? 1 : 0;
 }
-void print_all(List* list)
+void print_all(Array* Array)
 {
     printf("All variables:\n");
-    for (int index = 0; index < list->size; index++)
+    for (int index = 0; index < Array->size; index++)
     {
-        printf("%s %d\n", list->elems[index]->name, list->elems[index]->value);
+        printf("%s %d\n", Array->elems[index]->name, Array->elems[index]->value);
     }
 }
-void print_elem(List* list, int index)
+void print_elem(Array* Array, int index)
 {
-    printf("The value of variable: %s - %d\n", list->elems[index]->name, list->elems[index]->value);
+    printf("The value of variable: %s - %d\n", Array->elems[index]->name, Array->elems[index]->value);
 }
 
-status_code process_expression(char* str, List* list)
+status_code process_expression(char* str, Array* Array)
 {
     char first_part[100];
     char second_part[100];
@@ -200,7 +200,7 @@ status_code process_expression(char* str, List* list)
     }
     first_part[fp_index] = '\0';
     int is_exist = 0;
-    int index_1 = binary_search(list, first_part);
+    int index_1 = binary_search(Array, first_part);
     if (index_1 != -1)
         is_exist = 1;
     if (str[index] == '=')
@@ -220,7 +220,7 @@ status_code process_expression(char* str, List* list)
             if (is_int(second_part))
             {
                 if (is_exist)
-                    list->elems[index_1]->value = atoi(second_part);
+                    Array->elems[index_1]->value = atoi(second_part);
                 else
                 {
                     MemoryCell *new_el = create_memory_cell(first_part, atoi(second_part));
@@ -228,7 +228,7 @@ status_code process_expression(char* str, List* list)
                     {
                         return memory_error;
                     }
-                    if (insert(list, new_el) != success)
+                    if (insert(Array, new_el) != success)
                     {
                         return memory_error;
                     }
@@ -238,18 +238,18 @@ status_code process_expression(char* str, List* list)
             }
             else
             {
-                int index_2 = binary_search(list, second_part);
+                int index_2 = binary_search(Array, second_part);
                 if (index_2 != -1)
                 {
                     if (is_exist)
                     {
-                        list->elems[index_1]->value = list->elems[index_2]->value;
+                        Array->elems[index_1]->value = Array->elems[index_2]->value;
                         return success;
                     }
                     else
                     {
-                        MemoryCell *new_al = create_memory_cell(first_part, list->elems[index_2]->value);
-                        if (insert(list, new_al) != success)
+                        MemoryCell *new_al = create_memory_cell(first_part, Array->elems[index_2]->value);
+                        if (insert(Array, new_al) != success)
                         {
                             return memory_error;
                         }
@@ -279,10 +279,10 @@ status_code process_expression(char* str, List* list)
             }
             else
             {
-                int index_2 = binary_search(list, second_part);
+                int index_2 = binary_search(Array, second_part);
                 if (index_2 != -1)
                 {
-                    atoi_res_second_part = list->elems[index_2]->value;
+                    atoi_res_second_part = Array->elems[index_2]->value;
                 }
                 else
                     return invalid_value;
@@ -294,10 +294,10 @@ status_code process_expression(char* str, List* list)
             }
             else
             {
-                int index_3 = binary_search(list, third_part);
+                int index_3 = binary_search(Array, third_part);
                 if (index_3 != -1)
                 {
-                    atoi_res_third_part = list->elems[index_3]->value;
+                    atoi_res_third_part = Array->elems[index_3]->value;
                 }
                 else
                     return invalid_value;
@@ -324,7 +324,7 @@ status_code process_expression(char* str, List* list)
             }
             if (is_exist)
             {
-                list->elems[index_1]->value = atoi_res_second_part;
+                Array->elems[index_1]->value = atoi_res_second_part;
                 return success;
             }
             else
@@ -334,7 +334,7 @@ status_code process_expression(char* str, List* list)
                 {
                     return memory_error;
                 }
-                if (insert(list, new_el) != success)
+                if (insert(Array, new_el) != success)
                 {
                     return memory_error;
                 }
@@ -346,34 +346,34 @@ status_code process_expression(char* str, List* list)
     {
         if (strcmp(first_part, "print") == 0) //len = 5
         {
-            print_all(list);
+            print_all(Array);
             return success;
         }
         else
         {
             char* name = &(first_part[6]);
-            int index = binary_search(list, name);
+            int index = binary_search(Array, name);
             if (index == -1)
             {
                 return invalid_value;
             }
-            print_elem(list, index);
+            print_elem(Array, index);
             return success;
         }
     }
 }
-void destroy_list(List* list)
+void destroy_Array(Array* Array)
 {
-    for (int index = 0; index < list->capasity; index++)
+    for (int index = 0; index < Array->capasity; index++)
     {
-        if (list->elems[index] != NULL)
+        if (Array->elems[index] != NULL)
         {
-            free(list->elems[index]->name);
+            free(Array->elems[index]->name);
         }
-        free(list->elems[index]);
+        free(Array->elems[index]);
     }
-    free(list->elems);
-    free(list);
+    free(Array->elems);
+    free(Array);
 }
 
 int main(int argc, char *argv[])
@@ -391,15 +391,15 @@ int main(int argc, char *argv[])
         return error_with_opening_file;
     }
 
-    List* list = create_list(10);
+    Array* Array = create_Array(10);
     char *expression;
     while (expression = read_expression_from_file(input_file))
     {   
         // printf("expression from file: %s\n", expression);
-        if (process_expression(expression, list) != success)
+        if (process_expression(expression, Array) != success)
         {
             printf("memory error or unknown value\n");
-            destroy_list(list);
+            destroy_Array(Array);
             free(expression);
             fclose(input_file);
             return 0;
@@ -407,7 +407,7 @@ int main(int argc, char *argv[])
         free(expression);
     }
     
-    destroy_list(list);
+    destroy_Array(Array);
     fclose(input_file);
     return 0;
 }
