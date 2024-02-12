@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
+#include <limits.h>
 
 typedef struct
 {
@@ -68,6 +69,11 @@ MemoryCell* create_memory_cell(char* name, int value)
         return NULL;
     }
     new_memory_cell->name = strdup(name);
+    if(new_memory_cell->name == NULL)
+    {
+        free(new_memory_cell);
+        return NULL;
+    }
     new_memory_cell->value = value;
     return new_memory_cell;
 }
@@ -138,32 +144,32 @@ char* read_expression_from_file(FILE *file)
 }
 int binary_search(Array* Array, char* key)
 {
-    int left = 0;            
-    int right = Array->size; 
-    int mid = 0;              
+    int left = 0;
+    int right = Array->size;
+    int mid = 0;
     while (left <= right)
     {
         mid = (left + right) / 2;
         if (Array->elems[mid] == NULL)
         {
-            return -1;  
-        } 
+            return -1;
+        }
         MemoryCell* elem = Array->elems[mid];
-        int res_strcmp = strcmp(key, elem->name);                           
-        if (res_strcmp == 0) 
+        int res_strcmp = strcmp(key, elem->name);
+        if (res_strcmp == 0)
         {
             return mid;
         }
-        else if (res_strcmp > 0) 
+        else if (res_strcmp > 0)
         {
             left = mid + 1; //for less steps
         }
-        else 
+        else
         {
             right = mid - 1;
         }
     }
-    return -1; 
+    return -1;
 }
 int is_operator(char sym)
 {
@@ -182,6 +188,45 @@ void print_elem(Array* Array, int index)
     printf("The value of variable: %s - %d\n", Array->elems[index]->name, Array->elems[index]->value);
 }
 
+int is_overflow(int a, int b)
+{
+    if (a > 0)
+    {
+        if (b > 0)
+        {
+            if (a > (INT_MAX / b))
+            {
+                return 1;
+            }
+        }
+        else
+        {
+            if (b < (INT_MIN / a))
+            {
+                return 1;
+            }
+        }
+    }
+    else
+    {
+        if (b > 0)
+        {
+            if (a < (INT_MIN / b))
+            {
+                return 1;
+            }
+        }
+        else
+        {
+            if ((a != 0) && (b < (INT_MAX / a)))
+            {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
 status_code process_expression(char* str, Array* Array)
 {
     char first_part[100];
@@ -191,7 +236,7 @@ status_code process_expression(char* str, Array* Array)
     int fp_index = 0;
     while (!isalnum(str[index]))
         index++;
-    //first part 
+    //first part
     while (str[index] != ';' && str[index] != '=')
     {
         first_part[fp_index] = str[index];
@@ -304,23 +349,45 @@ status_code process_expression(char* str, Array* Array)
             }
             switch (operator)
             {
-            case '+':
-                atoi_res_second_part += atoi_res_third_part;
-                break;
-            case '-':
-                atoi_res_second_part -= atoi_res_third_part;
-                break;
-            case '*':
-                atoi_res_second_part *= atoi_res_third_part;
-                break;
-            case '/':
-                atoi_res_second_part /= atoi_res_third_part;
-                break;
-            case '%':
-                atoi_res_second_part %= atoi_res_third_part;
-                break;
-            default:
-                break;
+                case '+':
+                    if (((atoi_res_third_part > 0) && (atoi_res_second_part > (INT_MAX - atoi_res_third_part))) ||
+                        ((atoi_res_third_part < 0) && (atoi_res_second_part < (INT_MAX - atoi_res_third_part))))
+                    {
+                        return invalid_value;
+                    }
+                    atoi_res_second_part += atoi_res_third_part;
+                    break;
+                case '-':
+                    if ((atoi_res_third_part > 0 && atoi_res_second_part < INT_MIN + atoi_res_third_part) ||
+                        (atoi_res_third_part < 0 && atoi_res_second_part > INT_MAX + atoi_res_third_part))
+                    {
+                        return invalid_value;
+                    }
+                    atoi_res_second_part -= atoi_res_third_part;
+                    break;
+                case '*':
+                    if (is_overflow(atoi_res_second_part, atoi_res_third_part))
+                    {
+                        return invalid_value;
+                    }
+                    atoi_res_second_part *= atoi_res_third_part;
+                    break;
+                case '/':
+                    if ((atoi_res_third_part == 0) || ((atoi_res_second_part == INT_MIN) && (atoi_res_third_part == -1)))
+                    {
+                        return invalid_value;
+                    }
+                    atoi_res_second_part /= atoi_res_third_part;
+                    break;
+                case '%':
+                    if ((atoi_res_third_part == 0) || ((atoi_res_second_part == INT_MIN) && (atoi_res_third_part == -1)))
+                    {
+                        return invalid_value;
+                    }
+                    atoi_res_second_part %= atoi_res_third_part;
+                    break;
+                default:
+                    break;
             }
             if (is_exist)
             {
@@ -361,6 +428,11 @@ status_code process_expression(char* str, Array* Array)
             return success;
         }
     }
+    else
+    {
+        return invalid_input;
+    }
+    //TODO: return invalid_input;
 }
 void destroy_Array(Array* Array)
 {
@@ -394,7 +466,7 @@ int main(int argc, char *argv[])
     Array* Array = create_Array(10);
     char *expression;
     while (expression = read_expression_from_file(input_file))
-    {   
+    {
         // printf("expression from file: %s\n", expression);
         if (process_expression(expression, Array) != success)
         {
@@ -406,7 +478,7 @@ int main(int argc, char *argv[])
         }
         free(expression);
     }
-    
+
     destroy_Array(Array);
     fclose(input_file);
     return 0;
