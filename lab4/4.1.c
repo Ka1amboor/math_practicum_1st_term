@@ -135,7 +135,18 @@ Status_code insert_macros(Hash_table* hash_table, char *key, char *value)
     }
     new_macros->hash = hash_value;
     new_macros->key = strdup(key);
+    if(new_macros->key == NULL)
+    {
+        free(new_macros);
+        return MEMORY_ERROR;
+    }
     new_macros->value = strdup(value);
+    if(new_macros->value == NULL)
+    {
+        free(new_macros);
+        free(new_macros->key);
+        return MEMORY_ERROR;
+    }
     new_macros->next = hash_table->items[index];
     hash_table->items[index] = new_macros;
     return SUCCESS;
