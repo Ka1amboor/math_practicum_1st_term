@@ -47,7 +47,7 @@ Node* merge(Node* a, Node* b)
     }
 }
 
-static void split(Node* n, int key, Node** a, Node** b)
+void split(Node* n, int key, Node** a, Node** b)
 {
     if(!n)
     {
@@ -74,7 +74,7 @@ Node* insert(Node* root, int key, int priority)
     Node* greater;// all keys > key
 
     split(root, key, &less, &greater);
-    Node* new_node = create_node(key, rand());
+    Node* new_node = create_node(key, 1 + rand() % 10);
     less = merge(less, new_node);
     root = merge(less, greater);
 
@@ -86,9 +86,11 @@ void print_inorder_traversal(Node* root, int depth)
     if(root)
     {
         print_inorder_traversal(root->left, depth + 1);
-        for(int i = 0; i < depth; i++)
-            printf("\t");
-        printf("(%d)%d)", root->key, root->priority);
+        for(int i = 0; i < depth*3; i++)
+        {
+            printf("   ");
+        }
+        printf("./(%d)%d)", root->key, root->priority);
         print_inorder_traversal(root->right, depth + 1);
     }
 }
@@ -103,14 +105,50 @@ void destroy_tree(Node* root)
     }
 }
 
+Node* search(Node* root, int key)
+{
+    if(!root || root->key == key)
+    {
+        return root;
+    }
+
+    if(key < root->key)
+    {
+        return search(root->left, key);
+    }
+
+    else
+    {
+        return search(root->right, key);
+    }
+}
+
+Node* extract(Node* root, int key) 
+{
+    Node* node_to_remove = search(root, key);
+    
+    if (!node_to_remove) {
+        return root;
+    }
+    
+    Node* less;
+    Node* greater;
+    split(root, key, &less, &greater);
+    root = merge(less, greater);
+    free(node_to_remove);
+
+    return root;
+}
+
+
 int main()
 {
     Node* root = NULL;
 
     for(int i = 0; i < 10; i++)
     {
-        int key = 80 + rand() % 21;
-        int priority = 80 + rand() % 21;
+        int key = 1 + rand() % 10;
+        int priority = 1 + rand() % 10;
 
         root = insert(root, key, priority);
         
@@ -118,6 +156,19 @@ int main()
 
     printf("cartesian tree\n\n");
     print_inorder_traversal(root, 0);
+    printf("\n\n\n\n");
+    Node* result = search(root, 5);
+    if(result)
+    {
+        printf("yes\n");
+        extract(root, 5);
+        print_inorder_traversal(root, 0);
+
+    }
+    else
+    {
+        printf("no\n");
+    }
     destroy_tree(root);
 
     return 0;
