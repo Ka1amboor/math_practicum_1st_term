@@ -124,18 +124,14 @@ Node* search(Node* root, int key)
 }
 
 Node* extract(Node* root, int key) 
-{
-    Node* node_to_remove = search(root, key);
-    
-    if (!node_to_remove) {
-        return root;
-    }
-    
+{   
     Node* less;
     Node* greater;
-    split(root, key, &less, &greater);
+    Node* mid;
+    split(root, key - 1, &less, &mid);
+    split(mid, key, &mid, &greater);
+    
     root = merge(less, greater);
-    free(node_to_remove);
 
     return root;
 }
@@ -161,7 +157,7 @@ int main()
     if(result)
     {
         printf("yes\n");
-        extract(root, 5);
+        extract(root, 2);
         print_inorder_traversal(root, 0);
 
     }
