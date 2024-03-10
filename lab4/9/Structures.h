@@ -16,6 +16,19 @@ typedef enum
 
 }status_code;
 
+
+
+typedef struct My_time
+{
+    int year;
+    int month;
+    int day;
+    int hour;
+    int minute;
+    int second;
+
+}My_time;
+
 typedef enum Structure_for_application
 {
     BINARY_HEAP,
@@ -44,6 +57,17 @@ typedef struct Application
     char* message; //текст заявки
 
 }Application;
+
+void free_application(Application* application)
+{
+    if(!application)
+    {
+        return;
+    }
+    free(application->message);
+    free(application);
+    application = NULL;
+}
 
 typedef struct Operator
 {
